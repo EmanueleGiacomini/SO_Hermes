@@ -1,4 +1,5 @@
-# SO_Hermes
+# [Sistemi Operativi] Hermes
+## Communication between multiple Arduino(s) with nrf24L01 radio module
 
 ## Reference
 [nrf24L01 Library of Kehribar](https://github.com/kehribar/nrf24L01_plus)
