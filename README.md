@@ -5,7 +5,7 @@
 
 
 ## Devices
-[nrf24L01](https://www.sparkfun.com/datasheets/Components/SMD/nRF24L01Pluss_Preliminary_Product_Specification_v1_0.pdf)
+[nrf24L01 datasheet](https://www.sparkfun.com/datasheets/Components/SMD/nRF24L01Pluss_Preliminary_Product_Specification_v1_0.pdf)
 
 ## Pins
 I/O from arduino's view
