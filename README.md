@@ -1,4 +1,7 @@
-# SO_Hermes
+# [Sistemi Operativi] Hermes
+## Communication between multiple Arduino(s) with nrf24L01 radio module
+According to some, Hermes is considered the personification of the wind, in fact he inherits: lightness, speed, inconstancy in purposes, joking mood.
+[Hermes, Greek mythology](http://mitologiagreca.blogspot.com/2007/07/hermes.html)
 
 ## Reference
 [nrf24L01 Library of Kehribar](https://github.com/kehribar/nrf24L01_plus)
