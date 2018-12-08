@@ -11,7 +11,7 @@ According to some, Hermes is considered the personification of the wind, in fact
 [nrf24L01 datasheet](https://www.sparkfun.com/datasheets/Components/SMD/nRF24L01Pluss_Preliminary_Product_Specification_v1_0.pdf)
 
 ## Pins
-I/O from arduino's view
+I/O from Arduino's view
 *  nrf24L01
     *  SPI (Serial Peripheral Interface) Protocol:
         *  (I) MISO -> Slave's pin for sending data to the master
