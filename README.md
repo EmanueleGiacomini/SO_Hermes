@@ -8,6 +8,10 @@ According to some, Hermes is considered the personification of the wind, in fact
 
 * [Implementation of SPI without using <SPI.h>](https://forum.arduino.cc/index.php?topic=516889.0)
 
+* [SPI Interface by Sparkfun](https://learn.sparkfun.com/tutorials/serial-peripheral-interface-spi/all)
+
+* [NRF24l01 Explained](https://howtomechatronics.com/tutorials/arduino/arduino-wireless-communication-nrf24l01-tutorial/)
+
 ## Devices
 [nrf24L01 datasheet](https://www.sparkfun.com/datasheets/Components/SMD/nRF24L01Pluss_Preliminary_Product_Specification_v1_0.pdf)
 
