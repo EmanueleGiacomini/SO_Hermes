@@ -4,8 +4,9 @@ According to some, Hermes is considered the personification of the wind, in fact
 [Hermes, Greek mythology](http://mitologiagreca.blogspot.com/2007/07/hermes.html)
 
 ## Reference
-[nrf24L01 Library of Kehribar](https://github.com/kehribar/nrf24L01_plus)
+* [nrf24L01 Library of Kehribar](https://github.com/kehribar/nrf24L01_plus)
 
+* [Implementation of SPI without using <SPI.h>](https://forum.arduino.cc/index.php?topic=516889.0)
 
 ## Devices
 [nrf24L01 datasheet](https://www.sparkfun.com/datasheets/Components/SMD/nRF24L01Pluss_Preliminary_Product_Specification_v1_0.pdf)
