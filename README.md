@@ -12,6 +12,8 @@ According to some, Hermes is considered the personification of the wind, in fact
 
 * [NRF24l01 Explained](https://howtomechatronics.com/tutorials/arduino/arduino-wireless-communication-nrf24l01-tutorial/)
 
+* [The SPI of the AVR](http://maxembedded.com/2013/11/the-spi-of-the-avr/)
+
 ## Devices
 [nrf24L01 datasheet](https://www.sparkfun.com/datasheets/Components/SMD/nRF24L01Pluss_Preliminary_Product_Specification_v1_0.pdf)
 
