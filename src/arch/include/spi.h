@@ -5,6 +5,8 @@
  * TODO: Add explanations of SPI module
  **/
 
+#pragma once
+#include <stdint.h>
 
 /**
  * Insert c in the spi buffer, ready to be sent

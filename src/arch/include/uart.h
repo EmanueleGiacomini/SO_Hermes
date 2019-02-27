@@ -6,6 +6,9 @@
  * bytes.
  **/
 
+#pragma once
+#include <stdint.h>
+
 /**
  * Insert c in the uart buffer, ready to be sent
  **/
