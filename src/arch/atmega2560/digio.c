@@ -9,8 +9,8 @@
 /**
  * configure p as Input or Output
  **/
-void digio_configurePin(uint8_t , PinMode) {
-
+void digio_configurePin(uint8_t pin, PinMode mode) {
+  
 }
 /**
  * Set the PORT Register of the pin:
@@ -19,12 +19,12 @@ void digio_configurePin(uint8_t , PinMode) {
  * is pin an INPUT ?
  *    then modify the pullup status of the pin
  **/
-void digio_setPin(uint8_t , PinStatus) {
+void digio_setPin(uint8_t pin, PinStatus status) {
 
 }
 /**
  * Reads the PIN Register of the pin
  **/
-uint8_t digio_readPin(uint8_t) {
+uint8_t digio_readPin(uint8_t pin) {
 
 }
