@@ -9,17 +9,29 @@
 #pragma once
 #include <stdint.h>
 
+struct Uart;
+
+/**
+ * Initialize the Uart module
+ **/
+struct Uart* Uart_init(uint32_t);
+
 /**
  * Insert c in the uart buffer, ready to be sent
  **/
-void uart_write(uint8_t c);
+void Uart_write(struct Uart*, uint8_t);
 
 /**
  * Return the number of available bytes to read from the uart
  **/
-uint8_t uart_available();
+uint8_t Uart_available(struct Uart*);
 
 /**
  * reads the first character from the uart buffer
  **/
-uint8_t uart_read();
+uint8_t Uart_read(struct Uart*);
+
+/**
+ * Returns the number of free cells inside the tx buffer
+ **/
+uint16_t Uart_txFree(struct Uart*);

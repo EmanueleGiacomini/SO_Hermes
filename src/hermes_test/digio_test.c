@@ -3,8 +3,14 @@
  **/
 
 #include "digio.h"
+#include "delay.h"
 
 void main() {
   digio_configurePin(13, Output);
-  digio_setPin(13, High);
+  while(1) {    
+    digio_setPin(13, High);
+    delay(1000);
+    digio_setPin(13, Low);
+    delay(1000);
+  }
 }

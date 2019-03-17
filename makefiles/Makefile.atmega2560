@@ -20,9 +20,12 @@ AVRDUDE_FLAGS += -D -q -V -C /usr/share/arduino/hardware/tools/avr/../avrdude.co
 AVRDUDE_FLAGS += -c wiring
 
 ARCH_OBJS=pins.o\
-digio.o
+digio.o\
+delay.o\
+uart.o
 
-BINS= digio_test.elf
+BINS= digio_test.elf\
+uart_test.elf
 
 
 .phony: clean all cleareprom
