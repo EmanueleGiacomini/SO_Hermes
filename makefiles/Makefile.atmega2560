@@ -9,7 +9,7 @@ INCLUDE_DIRS=-I$(PREFIX)/src/arch/include -I$(PREFIX)/src/common -I$(PREFIX)/src
 CC_OPTS=-Wall --std=gnu99 -DF_CPU=16000000UL -O3 -funsigned-char -funsigned-bitfields  -fshort-enums -Wstrict-prototypes -mmcu=atmega2560 -D_ARDUINO_MEGA_2560 $(INCLUDE_DIRS)
 
 AVRDUDE=avrdude
-AVRDUDE_PORT=/dev/ttyACM1
+AVRDUDE_PORT=/dev/ttyACM0
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET):i
 AVRDUDE_FLAGS = -p m2560 -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER) -b 115200

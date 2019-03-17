@@ -35,15 +35,15 @@ enum CNTRL_BTNS {  // List of buttons avaiable
 };
 
 
-struct js_event {
+typedef struct {
 		uint32_t time;     /* event timestamp in milliseconds */
 		int16_t value;    /* value */
 		uint8_t type;      /* event type */
 		uint8_t number;    /* axis/button number */
-};
+} js_event;
 
 
-void printButton(uint8_t btn);  // Function that prints the number of the button
+void printButton(uint8_t btn);  // Function that prints the value of the button
 
 
 
