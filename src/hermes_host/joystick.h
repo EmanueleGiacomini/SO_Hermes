@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <hermes_packets.h>
 
 #define JS_EVENT_BUTTON         0x01    /* button pressed/released */
 #define JS_EVENT_AXIS           0x02    /* joystick moved */
@@ -15,36 +16,37 @@
 #define BTN_REL	  	0x00  	// Value when the button is released
 
 enum CNTRL_BTNS {  // List of buttons avaiable
-	BTN_X,
-	BTN_O,
-	BTN_TR,
-	BTN_SQ,
-	BTN_L1,
-	BTN_R1,
-	BTN_L2,
-	BTN_R2,
-	BTN_SEL,
-	BTN_STRT,
-	BTN_PS,
-	BTN_L3,
-	BTN_R3,
-	UP,
-	DOWN,
-	LEFT,
-	RIGHT
+  BTN_X,
+  BTN_O,
+  BTN_TR,
+  BTN_SQ,
+  BTN_L1,
+  BTN_R1,
+  BTN_L2,
+  BTN_R2,
+  BTN_SEL,
+  BTN_STRT,
+  BTN_PS,
+  BTN_L3,
+  BTN_R3,
+  UP,
+  DOWN,
+  LEFT,
+  RIGHT
 };
 
 
 typedef struct {
-		uint32_t time;     /* event timestamp in milliseconds */
-		int16_t value;    /* value */
-		uint8_t type;      /* event type */
-		uint8_t number;    /* axis/button number */
+  uint32_t time;     /* event timestamp in milliseconds */
+  int16_t value;    /* value */
+  uint8_t type;      /* event type */
+  uint8_t number;    /* axis/button number */
 } js_event;
 
 
 void printButton(uint8_t btn);  // Function that prints the value of the button
-
+MotorControlPacket* getPacket(js_event * event);  // Function that transform an event to a MotorControlPacket
+                              
 
 
 
