@@ -15,6 +15,9 @@
 #define BTN_PRES  	0x01  	// Value when the button is held down
 #define BTN_REL	  	0x00  	// Value when the button is released
 
+#define MAX_AXIS_VALUE 32767  // Max axis value
+#define MAPPED_VALUE(x) ((x > 0)? (((x*127)/MAX_AXIS_VALUE) + 128) : (((x*127)/MAX_AXIS_VALUE) + 127) ) // Mapping value to 0-255
+
 enum CNTRL_BTNS {  // List of buttons avaiable
   BTN_X,
   BTN_O,
@@ -35,6 +38,14 @@ enum CNTRL_BTNS {  // List of buttons avaiable
   RIGHT
 };
 
+enum CNTRL_AXES {   // List of axes avaiable
+  AXIS_LX,
+  AXIS_LY,
+  AXIS_L2,
+  AXIS_RX,
+  AXIS_RY,
+  AXIS_R2
+};
 
 typedef struct {
   uint32_t time;     /* event timestamp in milliseconds */
@@ -45,7 +56,7 @@ typedef struct {
 
 
 void printButton(uint8_t btn);  // Function that prints the value of the button
-MotorControlPacket* getPacket(js_event * event);  // Function that transform an event to a MotorControlPacket
+MotorControlPacket* alterPacket(js_event * event);  // Function that transform an event to a MotorControlPacket
                               
 
 

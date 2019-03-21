@@ -11,7 +11,17 @@ int setupSerial(int fd, int speed, int parity) {
     return -1;
   }
 
-  speed = B57600;
+  switch (speed){
+  case 57600:
+    speed=B57600;
+    break;
+  case 115200:
+    speed=B115200;
+    break;
+  default:
+    printf("Baudrate not found: %d\n", speed);
+    return -1;
+  }
 
   cfsetospeed(&tty, speed);
   cfsetispeed(&tty, speed);
@@ -31,7 +41,7 @@ int setupSerial(int fd, int speed, int parity) {
 
 
 int sendPacket(int fd, char* buf, int len) {
-  printf("Len is %d \n", len);
+  //printf("Len is %d \n", len);
   uint8_t* test = (uint8_t*) buf;
   int i;
   for(i = 0; i<len; i++) {
@@ -50,8 +60,8 @@ void* mainRoutine(void *arg) {
   //printf("Desc joy = %d, Desc Ard = %d \n", fds[JOYSTICK], fds[MEGA]);
 
 
-  int len = 17;
-  char buf[17]="Ciao sono un pkt\n";
+  //int len = 17;
+  //char buf[17]="Ciao sono un pkt\n";
 
 
   printf("-------------------------------\n");
@@ -63,14 +73,57 @@ void* mainRoutine(void *arg) {
 
   while(1) {
     while(read(fds[JOYSTICK], &e, sizeof(e)) > 0) {
+      MotorControlPacket* mcp;
       if(e.type == JS_EVENT_BUTTON && e.value == BTN_PRES) { 	// Verifying that a button has been pressed
         if(e.number == BTN_PS) {
           endit = 1;
           break;
         }
-        sendPacket(fds[MEGA], buf, len);
+        
+        /* test print
+        printf("time -> %d \n", e.time);
+        printf("value -> %d \n", e.value);
+        printf("type -> %d \n", e.type);
+        printf("number -> %d \n", e.number);
+        */
+        if(e.number == BTN_X) {
+          mcp = alterPacket(&e);
+          printf("Speed is %d \n",mcp->speed);
+        }
+        //sendPacket(fds[MEGA], buf, len);
         printButton(e.number);
       }
+      
+      if(e.type == JS_EVENT_AXIS) {   // Verifying that an axis has been moved
+        mcp = alterPacket(&e);
+        printf("Speed is %d \n",mcp->speed);
+        
+        /*
+        int16_t val = MAPPED_VALUE(e.value);
+        
+        if(e.number == AXIS_R2) {
+          printf("R2 with %d \n", val);
+        }
+        
+        if(e.number == AXIS_L2) {
+          printf("L2 with %d \n", val);
+        }
+        
+        
+        if(e.number == AXIS_LX || e.number == AXIS_RX) {
+            if(val > 128) printf("RIGHT\n");
+            if(val < 128) printf("LEFT\n");
+        }
+        if(e.number == AXIS_LY || e.number == AXIS_RY) {
+            if(val > 128) printf("DOWN\n");
+            if(val < 128) printf("UP\n");
+        }
+        */
+      }
+      
+      //TODO: Send packet and delete it
+      free(mcp);
+      
     }
 
     if(endit) break;
