@@ -73,7 +73,7 @@ void* mainRoutine(void *arg) {
 
   while(1) {
     while(read(fds[JOYSTICK], &e, sizeof(e)) > 0) {
-      MotorControlPacket* mcp;
+      MotorControlPacket mcp;
       if(e.type == JS_EVENT_BUTTON && e.value == BTN_PRES) { 	// Verifying that a button has been pressed
         if(e.number == BTN_PS) {
           endit = 1;
@@ -88,7 +88,7 @@ void* mainRoutine(void *arg) {
         */
         if(e.number == BTN_X) {
           mcp = alterPacket(&e);
-          printf("Speed is %d \n",mcp->speed);
+          printf("Speed is %d \n",mcp.speed);
         }
         //sendPacket(fds[MEGA], buf, len);
         printButton(e.number);
@@ -96,7 +96,7 @@ void* mainRoutine(void *arg) {
       
       if(e.type == JS_EVENT_AXIS) {   // Verifying that an axis has been moved
         mcp = alterPacket(&e);
-        printf("Speed is %d \n",mcp->speed);
+        printf("Speed is %d \n",mcp.speed);
         
         /*
         int16_t val = MAPPED_VALUE(e.value);
@@ -121,8 +121,7 @@ void* mainRoutine(void *arg) {
         */
       }
       
-      //TODO: Send packet and delete it
-      free(mcp);
+      //TODO: Send packet
       
     }
 
@@ -165,7 +164,7 @@ int main(int argc, char* argv[]) {
   } else fds[i++] = joy_fd;
 
   int mega_fd = open("/dev/ttyACM0", O_RDWR | O_NOCTTY | O_SYNC);   // Getting the file descriptor of the Arduino on js0
-  // O_RDWR | O_NONBLOCK
+
   if(mega_fd < 0) {
     printf("Error %d opening %d.\n", errno, mega_fd);
     printf("Cannot find an Arduino. Please connect one.\n");
@@ -177,7 +176,7 @@ int main(int argc, char* argv[]) {
     exit(1);
   }
 
-
+  // If necessary insert here new file descriptors
 
   for (i=0; i<NUM_THREADS; ++i) {
     if(!i) ret = pthread_create(&threads[i], NULL, mainRoutine, (void*)fds); // Creating Thread#0 to manage a joystick
