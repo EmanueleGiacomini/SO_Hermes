@@ -20,6 +20,7 @@ static Spi spi;
 
 
 void spi_write(uint8_t c) {
+  
   SPDR = c; // Loading data in the buffer
   
   while( !(SPSR & (1<<SPIF)) ); // Waiting till the transmission is complete
@@ -33,11 +34,11 @@ uint8_t spi_read() {
 }
 
 void spi_init_master() {
+  
   DDRB = (1<<5) | (1<<3); // MOSI, SCK as output
   
   SPCR = (1<<SPE) | (1<<MSTR) | (1<<SPR0) | (1<<SPIE); // SPI on, Master on, Interrupts on
   
-  sei(); // Enabling global interrupts
 }
 
 void spi_init_slave() {
