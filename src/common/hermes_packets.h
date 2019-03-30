@@ -2,10 +2,12 @@
  * hermes_packets.h
  **/
 
+#define MAX_PACKET_TYPE 16
+
 typedef struct {
-  uint8_t seq;
   uint8_t id;
   uint8_t size;
+  uint8_t seq;
   uint8_t dest_addr;
   uint8_t src_addr;
   uint16_t checksum;
