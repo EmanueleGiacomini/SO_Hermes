@@ -22,7 +22,9 @@ AVRDUDE_FLAGS += -c wiring
 ARCH_OBJS=pins.o\
 digio.o\
 delay.o\
-uart.o
+uart.o\
+spi.o\
+hermes_nRF24L01.o
 
 COMM_OBJS=packet_handler.o\
 

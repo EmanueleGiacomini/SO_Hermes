@@ -91,6 +91,9 @@ void* mainRoutine(void *arg) {
           printf("Speed is %d \n",mcp.speed);
         }
         //sendPacket(fds[MEGA], buf, len);
+        uint8_t num= 2;
+        write(fds[MEGA], &num, 1);
+        
         printButton(e.number);
       }
       
@@ -156,7 +159,7 @@ int main(int argc, char* argv[]) {
   pthread_t threads[NUM_THREADS]; // Add more threads incrementing NUM_THREADS, Thread#0 -> Joystick
   int ret, i=0, fds[NUM_DEVICES];
 
-  int joy_fd = open("/dev/input/js1", O_RDONLY | O_NONBLOCK);  // Getting the file descriptor of the joystick on js1
+  int joy_fd = open("/dev/input/js0", O_RDONLY | O_NONBLOCK);  // Getting the file descriptor of the joystick on js1
   if(joy_fd < 0) {
     printf("Error %d opening %d.\n", errno, joy_fd);
     printf("Cannot find a joystick. Please connect one.\n");
