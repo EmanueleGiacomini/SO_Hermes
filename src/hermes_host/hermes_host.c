@@ -1,43 +1,6 @@
 #include "hermes_host.h"
+#include "serial.h"
 #include "joystick.h"
-
-
-int setupSerial(int fd, int speed, int parity) {
-  struct termios tty;
-  memset(&tty, 0, sizeof(tty));
-
-  if(tcgetattr(fd, &tty) != 0) {
-    printf("Error %d in tcgetattr.\n", errno);
-    return -1;
-  }
-
-  switch (speed){
-  case 57600:
-    speed=B57600;
-    break;
-  case 115200:
-    speed=B115200;
-    break;
-  default:
-    printf("Baudrate not found: %d\n", speed);
-    return -1;
-  }
-
-  cfsetospeed(&tty, speed);
-  cfsetispeed(&tty, speed);
-  cfmakeraw(&tty);
-
-  tty.c_cflag &= ~(PARENB | PARODD);
-  tty.c_cflag |= parity;
-  tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8;
-
-  if(tcsetattr(fd, TCSANOW, &tty) != 0) {
-    printf("Error %d in tcsetattr.\n", errno);
-    return -1;
-  }
-
-  return 0;
-}
 
 
 int sendPacket(int fd, char* buf, int len) {
@@ -165,20 +128,10 @@ int main(int argc, char* argv[]) {
     printf("Cannot find a joystick. Please connect one.\n");
     exit(1);
   } else fds[i++] = joy_fd;
-
-  int mega_fd = open("/dev/ttyACM0", O_RDWR | O_NOCTTY | O_SYNC);   // Getting the file descriptor of the Arduino on js0
-
-  if(mega_fd < 0) {
-    printf("Error %d opening %d.\n", errno, mega_fd);
-    printf("Cannot find an Arduino. Please connect one.\n");
-    exit(1);
-  } else fds[i++] = mega_fd;
-
-  if(setupSerial(mega_fd, SPEED, 0)) {  // Setting up the serial communication
-    printf("Error while setting up serial communication.\n");
-    exit(1);
-  }
-
+  
+  int mega_fd = setupSerial("/dev/ttyACM0", SPEED);
+  if (mega_fd < 0) fds[i++] = mega_fd;
+  
   // If necessary insert here new file descriptors
 
   for (i=0; i<NUM_THREADS; ++i) {

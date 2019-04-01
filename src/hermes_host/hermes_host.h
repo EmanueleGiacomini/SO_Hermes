@@ -14,11 +14,10 @@
 #define JOYSTICK 0
 #define MEGA 1
 
-#define SPEED 57600
+#define SPEED 57600 // Baud rate
 
 
-int setupSerial(int fd, int speed, int parity);
-int sendPacket(int fd, char* buf, int len);
+int sendPacket(int fd, char* buf, int len); // Just a test
 
 
 
