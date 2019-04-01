@@ -24,8 +24,11 @@ digio.o\
 delay.o\
 uart.o
 
+COMM_OBJS=packet_handler.o\
+
 BINS= digio_test.elf\
-uart_test.elf
+uart_test.elf\
+packet_test.elf
 
 
 .phony: clean all cleareprom

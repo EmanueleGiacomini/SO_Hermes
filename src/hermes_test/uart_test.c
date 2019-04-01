@@ -6,9 +6,8 @@
 #include "delay.h"
 #include "digio.h"
 
-void main() {
+int main(int argc, char** argv) {
   struct Uart* uart=Uart_init(115200);
-  uint8_t led_state=0;
   digio_configurePin(13, Output);
   digio_setPin(13, Low);
   while(1) {
@@ -17,4 +16,5 @@ void main() {
       Uart_write(uart, c);
     }    
   }
+  return 0;
 }

@@ -1,8 +1,9 @@
 /**
  * hermes_packets.h
  **/
-
+#pragma once
 #define MAX_PACKET_TYPE 16
+#define PACKET_SIZE_MAX 256
 
 typedef struct {
   uint8_t id;
