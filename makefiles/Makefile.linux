@@ -1,0 +1,33 @@
+CC=gcc
+COPTS=-Wall
+
+PREFIX=..
+COPTS+=-I$(PREFIX)/src/common -I$(PREFIX)/src/hermes_host
+
+COMM_OBJS=packet_handler.o\
+
+HOST_OBJS=serial.o
+
+BINS=packet_test.elf
+
+.phony: clean all
+
+all:$(BINS)
+        
+
+#common objects
+%.o:	$(PREFIX)/src/common/%.c 
+	$(CC) $(COPTS) -c  $<
+
+%.o:	$(PREFIX)/src/hermes_host/%.c 
+	$(CC) $(COPTS) -c  $<
+
+#peripherial test
+%.o:	$(PREFIX)/src/host_test/%.c 
+	$(CC) $(COPTS) -c  $<
+
+%.elf:	%.o $(COMM_OBJS) $(HOST_OBJS)
+	$(CC) $(COPTS) -o $@ $^ 
+
+clean:
+	rm -rf $(OBJS) $(BINS) *.hex *~ *.o

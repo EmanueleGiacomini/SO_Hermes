@@ -3,6 +3,7 @@
  **/
 
 #include "packet_handler.h"
+#include <stdio.h>
 
 PacketStatus _rxAA(PacketHandler* h, uint8_t c);
 PacketStatus _rx55(PacketHandler* h, uint8_t c);
@@ -11,42 +12,32 @@ PacketStatus _rxSize(PacketHandler* h, uint8_t c);
 PacketStatus _rxPayload(PacketHandler* h, uint8_t c);
 PacketStatus _rxCs(PacketHandler* h, uint8_t c); // checksum
 
-
-
-
-void _flushTxBuffer(PacketHandler* h) {
-  uint8_t* buf=h->tx_buffer;
-  uint8_t* bsize=&h->tx_size;
-  uint8_t* txs=&h->tx_start;
-  while(bsize) {
-    Uart_write(h->uart, buf[*(txs)++]);
-    --*(bsize);
-  }
-}
-
 void PacketHandler_init(PacketHandler* h) {
   h->tx_start=0;
   h->tx_end=0;
   h->tx_size=0;
-  h->uart=Uart_init(115200);
+  h->receive_fn=_rxAA;
 }
 
 void PacketHandler_addOperation(PacketHandler* h, PacketOperation* o) {
   h->packet_op[o->id]=*o;
 }
 
-PacketStatus PacketHandler_sendPacket(PacketHandler* h, PacketHeader* p) {
-  uint8_t psize=p->size;
-  uint16_t start_idx=(uint16_t)p;
-  uint16_t end_idx=(uint16_t)p+sizeof(PacketHandler)+psize;
-  uint8_t tx_size=h->
-  uint8_t* tx_buffer=h->tx_buffer;
-  while(start_idx<end_idx) {
-    tx_buffer[start_idx++]=*(uint8_t*)p;
+PacketStatus PacketHandler_sendPacket(PacketHandler* h, PacketHeader* _p) {
+  uint8_t* p=(uint8_t*)_p;
+  uint8_t* p_end=p+_p->size;
+  uint8_t* tx_buf=h->tx_buffer;
+  uint8_t* tx_end=&h->tx_end;
+  uint8_t* tx_size=&h->tx_size;
+  tx_buf[(*tx_end)++]=0xAA;
+  ++(*tx_size);
+  tx_buf[(*tx_end)++]=0x55;
+  ++(*tx_size);
+  while(p<p_end) {
+    tx_buf[(*tx_end)++]=*p;
+    ++(*tx_size);
     ++p;
-    ++start_idx;
   }
-  return Success;
 }
 
 PacketStatus PacketHandler_readByte(PacketHandler* h, uint8_t c) {
@@ -56,21 +47,26 @@ PacketStatus PacketHandler_readByte(PacketHandler* h, uint8_t c) {
 uint8_t PacketHandler_writeByte(PacketHandler* h) {
   if(h->tx_size==0)
     return 0;
-  
+  uint8_t c=h->tx_buffer[h->tx_start++];
+  h->tx_size--;
+  return c;
 }
 
 
 PacketStatus _rxAA(PacketHandler* h, uint8_t c) {
-  if(c==0xAA)
+  if(c==0xAA) {
     h->receive_fn=_rx55;
+  }
   return Success;
 }
 
 PacketStatus _rx55(PacketHandler* h, uint8_t c) {
-  if(c==0x55)
+  if(c==0x55) {
     h->receive_fn=_rxId;
-  else
+  }
+  else {
     h->receive_fn=_rxAA;
+  }
   return Success;
 }
 
@@ -79,6 +75,7 @@ PacketStatus _rxId(PacketHandler* h, uint8_t c) {
     h->receive_fn=&_rxAA;
     return UnknownType;
   } else {
+    h->curr_id=c;
     h->rx_buffer=h->packet_op[c].rx_buf;
     h->rx_size=h->packet_op[c].rx_size;
     h->receive_fn=_rxSize;
@@ -92,7 +89,7 @@ PacketStatus _rxSize(PacketHandler* h, uint8_t c) {
     h->rx_size=0;
     return WrongSize;
   } else {
-    h->bytes_to_read=c+4; // + 4 for seq, dest_addr, src_addr, checksum
+    h->bytes_to_read=c; //
     h->receive_fn=_rxPayload;
     return Success;
   }
@@ -110,6 +107,8 @@ PacketStatus _rxPayload(PacketHandler* h, uint8_t c) {
 
 PacketStatus _rxCs(PacketHandler* h, uint8_t c) {
   // TODO
-  h->receive_fn=_rx55;
+  (*h->packet_op[h->curr_id].on_receive_fn)(h->packet_op[h->curr_id].args);
+  h->receive_fn=_rxAA;
+  
   return Success;
 }

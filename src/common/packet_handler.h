@@ -6,7 +6,6 @@
 #include "hermes_packets.h"
 #include "packet_status.h"
 #include "packet_operations.h"
-#include "uart.h"
 
 struct PacketHandler;
 
@@ -19,6 +18,7 @@ typedef struct PacketHandler{
   uint8_t tx_end;
   uint8_t tx_size;
 
+  uint8_t curr_id;
   uint8_t* rx_buffer;
   uint8_t rx_size;
   uint8_t rx_start;

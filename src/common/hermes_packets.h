@@ -2,8 +2,11 @@
  * hermes_packets.h
  **/
 #pragma once
+#include <stdint.h>
 #define MAX_PACKET_TYPE 16
 #define PACKET_SIZE_MAX 256
+
+#pragma pack(push, 1)
 
 typedef struct {
   uint8_t id;
@@ -28,3 +31,5 @@ typedef struct {
   int16_t measured_speed;
 } MotorStatusPacket;
 #define ID_MOTOR_STATUS_PACKET 2
+
+#pragma pack(pop)
