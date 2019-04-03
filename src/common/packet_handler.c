@@ -89,7 +89,7 @@ PacketStatus _rxSize(PacketHandler* h, uint8_t c) {
     h->rx_size=0;
     return WrongSize;
   } else {
-    h->bytes_to_read=c; //
+    h->bytes_to_read=c-2; // because we already read ID and SIZE
     h->receive_fn=_rxPayload;
     return Success;
   }
