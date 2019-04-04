@@ -24,14 +24,17 @@ digio.o\
 delay.o\
 uart.o\
 spi.o\
-hermes_nRF24L01.o
 
 COMM_OBJS=packet_handler.o\
 buffer.o
 
+FIRMWARE_OBJS=hermes_nRF24L01.o\
+
 BINS= digio_test.elf\
 uart_test.elf\
-packet_test.elf
+packet_test.elf\
+hermes_client.elf\
+hermes_relay.elf\
 
 
 .phony: clean all cleareprom
@@ -42,6 +45,10 @@ all: $(BINS)
 %.o:	$(PREFIX)/src/common/%.c 
 	$(CC) $(CC_OPTS) -c  $<
 
+#common objects
+%.o:	$(PREFIX)/src/hermes_firmware/%.c 
+	$(CC) $(CC_OPTS) -c  $<
+
 #peripherials
 %.o:	$(PREFIX)/src/$(ARCH)/%.c 
 	$(CC) $(CC_OPTS) -c  $<
@@ -50,7 +57,7 @@ all: $(BINS)
 %.o:	$(PREFIX)/src/hermes_test/%.c 
 	$(CC) $(CC_OPTS) -c  $<
 
-%.elf:	%.o $(ARCH_OBJS) $(COMM_OBJS)
+%.elf:	%.o $(ARCH_OBJS) $(COMM_OBJS) $(FIRMWARE_OBJS)
 	$(CC) $(CC_OPTS) -o $@ $^ 
 
 clean:
