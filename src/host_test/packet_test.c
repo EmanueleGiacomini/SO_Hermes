@@ -2,79 +2,147 @@
  * packet_test.c
  **/
 
+#include <stdint.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/wait.h>
+
 #include "hermes_packets.h"
 #include "packet_handler.h"
-#include <stdio.h>
-#include <stdlib.h>
 #include "serial.h"
-#include <unistd.h>
-#include <stdint.h>
 
-void receiveFn(void);
-
-MotorControlPacket motor_control_packet = {
-  {
-    .id=ID_MOTOR_CONTROL_PACKET,
-    .size=sizeof(MotorControlPacket),
-    .seq=0,
-    .dest_addr=0x0A,
-    .src_addr=0xDE,
-    .checksum=0xBE
-  },
-  .mode=0,
-  .speed=255
-};
-PacketOperation motor_control_packet_ops={
-  .id=ID_MOTOR_CONTROL_PACKET,
-  .rx_buf=(uint8_t*)&motor_control_packet,
-  .rx_size=sizeof(MotorControlPacket),
-  .rx_start=0,
-  .rx_end=0,
-  .on_receive_fn=receiveFn,
-  .args=0,
-};
-
-void receiveFn(void) {
-  printf("%d\n", motor_control_packet.speed);
+void Packet_print(PacketHeader* p) {
+  printf("{[id:%d s:%d seq:%d dest:%d src:%d checksum:%d] mode:%d speed:%d}\r",
+         p->id,
+         p->size,
+         p->seq,
+         p->dest_addr,
+         p->src_addr,
+         p->checksum,
+         ((MotorControlPacket*)p)->mode,
+         ((MotorControlPacket*)p)->speed);
 }
 
-PacketHandler packet_handler;
+static int recv_packets=0;
 
-void _flushBuffer(int fd, uint8_t* buf, uint8_t start, uint8_t size) {
-  for(int i=0;i<size;++i) {
-    uint8_t c=buf[start+i];
+void receiveFn(PacketHeader* p) {
+  ++recv_packets;
+  Packet_print(p);
+  fflush(stdout);
+}
+
+void _flushBuffer(int fd, PacketHandler* ph) {
+  uint16_t bytes_to_write=ph->tx_size;
+  for(int i=0;i<bytes_to_write;++i) {
+    uint8_t c=buffer_read(ph->tx_buffer, &ph->tx_start, PACKET_SIZE_MAX);
     write(fd, &c, 1);
+    --ph->tx_size;
   }
 }
 
-void printPacket() {
 
+int pipefd[2];
+
+
+void receiverFn(void) {
+
+  MotorControlPacket motor_control_packet = {
+    {
+      .id=ID_MOTOR_CONTROL_PACKET,
+      .size=sizeof(MotorControlPacket),
+      .seq=0,
+      .dest_addr=0x0A,
+      .src_addr=0xDE,
+      .checksum=0xBE
+    },
+    .mode=0,
+    .speed=0
+  };
+  PacketOperation motor_control_packet_ops={
+    .id=ID_MOTOR_CONTROL_PACKET,
+    .exp_size=sizeof(MotorControlPacket),
+    .rx_buf=(uint8_t*)&motor_control_packet,
+    .rx_size=sizeof(MotorControlPacket),
+    .rx_start=0,
+    .rx_end=0,
+    .on_receive_fn=receiveFn,
+    .args=&motor_control_packet,
+  };
+  
+  PacketHandler _ph;
+  PacketHandler* ph=&_ph;
+  PacketHandler_init(ph);
+  PacketHandler_addOperation(ph, &motor_control_packet_ops);
+  printf("[Receiver] Starting...\n");
+  close(pipefd[1]);
+  uint8_t c;
+  uint8_t ctr=0;
+  while(1) {
+    if(read(pipefd[0], &c, 1)!=1) {
+      printf("Error during read...\n");
+      break;
+    }
+    //printf("%x", c);
+    ctr++;
+    //if(ctr%(sizeof(MotorControlPacket)+2)==0) {
+      //printf("\n");
+      //}
+    if(PacketHandler_readByte(ph, c)) {
+      printf("ERROR while reading packet...\n");
+    }
+  }
+  close(pipefd[0]);
+  return;
 }
+
+void transmitterFn(void) {
+  MotorControlPacket motor_control_packet = {
+    {
+      .id=ID_MOTOR_CONTROL_PACKET,
+      .size=sizeof(MotorControlPacket),
+      .seq=0,
+      .dest_addr=0x0A,
+      .src_addr=0xDE,
+      .checksum=0xBE
+    },
+    .mode=0,
+    .speed=0
+  };
+
+  PacketHandler _ph;
+  PacketHandler* ph=&_ph;
+  PacketHandler_init(ph);
+  printf("[Transmitter] Starting...\n");
+  close(pipefd[0]);
+  while(1) {
+    motor_control_packet.speed++;
+    motor_control_packet.mode=(motor_control_packet.mode+1)%2;
+    PacketHandler_sendPacket(ph, (PacketHeader*)&motor_control_packet);
+    _flushBuffer(pipefd[1], ph);
+    usleep(100000);
+  }
+  close(pipefd[1]);
+  return;
+}
+
 
 int main(int argc, char** argv) {
-  printf("Starting program\n");
-  int serial_fd=setupSerial("/dev/ttyACM0", 57600);
-  if(serial_fd<0) {
-    printf("Could not open serial...\n");
+  if(pipe2(pipefd, 0)) {
+    printf("Error while executing pipe2...exiting\n");
     return 1;
-  } 
-  
-
-  PacketHandler_init(&packet_handler);
-  PacketHandler_addOperation(&packet_handler, &motor_control_packet_ops);
-  /**
-  while(1) {
-    printf("Sending packet...\n");
-    PacketHandler_sendPacket(&packet_handler, (PacketHeader*)&motor_control_packet);
-    _flushBuffer(serial_fd, packet_handler.tx_buffer, packet_handler.tx_start, packet_handler.tx_size);
-    sleep(1);
+  }  
+  pid_t pid;
+  pid=fork();
+  if(pid==0) {
+    receiverFn();
+  } else {
+    transmitterFn();
+    exit(0);
   }
-  **/
-  uint8_t c;
-  while(1) {
-    read(serial_fd, (void*)&c, (size_t)1);
-    PacketHandler_readByte(&packet_handler, c);
-  }
-  
-  return 0;
+  int retval;
+  wait(&retval);
+  printf("Closing test\n");
+  return;
 }

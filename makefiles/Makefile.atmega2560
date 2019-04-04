@@ -27,6 +27,7 @@ spi.o\
 hermes_nRF24L01.o
 
 COMM_OBJS=packet_handler.o\
+buffer.o
 
 BINS= digio_test.elf\
 uart_test.elf\
@@ -53,7 +54,7 @@ all: $(BINS)
 	$(CC) $(CC_OPTS) -o $@ $^ 
 
 clean:
-	rm -rf $(OBJS) $(BINS) *.hex *~ *.o
+	rm -rf $(OBJS) $(BINS) *.he+x *~ *.o
 
 cleareprom:
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -e

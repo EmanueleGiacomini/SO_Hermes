@@ -26,7 +26,7 @@ MotorControlPacket motor_control_packet = {
     .checksum=0xBE
   },
   .mode=0,
-  .speed=255
+  .speed=133
 };
 
 /**
@@ -55,10 +55,10 @@ int main(int argc, char** argv) {
   struct Uart* u1 = Uart_init(115200);
   PacketHandler_init(&packet_handler);
   while(1) {
-    motor_control_packet.speed+=1;
+    motor_control_packet.speed+=10;
     PacketHandler_sendPacket(&packet_handler, (PacketHandler*)&motor_control_packet);
     flushBuffer(u1, &packet_handler);
-    delay(1000);
+    delay(500);
   }
   
   /**

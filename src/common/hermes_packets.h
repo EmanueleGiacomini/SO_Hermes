@@ -14,7 +14,7 @@ typedef struct {
   uint8_t seq;
   uint8_t dest_addr;
   uint8_t src_addr;
-  uint16_t checksum;
+  uint8_t checksum;
 } PacketHeader;
 
 typedef struct {

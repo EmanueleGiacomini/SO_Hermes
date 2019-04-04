@@ -1,14 +1,15 @@
 CC=gcc
-COPTS=-Wall
+COPTS=-Wall -std=gnu11
 
 PREFIX=..
 COPTS+=-I$(PREFIX)/src/common -I$(PREFIX)/src/hermes_host
 
 COMM_OBJS=packet_handler.o\
+buffer.o
 
 HOST_OBJS=serial.o
 
-BINS=packet_test.elf
+BINS=packet_test.elf\
 
 .phony: clean all
 
