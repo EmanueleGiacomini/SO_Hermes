@@ -29,8 +29,8 @@ int main(void) {
   //init interrupt
   sei();
 
-  uint8_t test[NRF24L01_PAYLOAD] = "ciao so io :-)!!";
-
+  //uint8_t test[NRF24L01_PAYLOAD] = "ciao so io :-)!!";
+  uint8_t test[NRF24L01_PAYLOAD] = "lavinia dipor!\n";
   //setup buffer
   for(i=0; i<sizeof(bufferout); i++)
     bufferout[i] = test[i];

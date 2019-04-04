@@ -31,7 +31,8 @@ int main(void) {
   sei();
 
 
-  uint8_t test[NRF24L01_PAYLOAD] = "ciao so io :-)!!";
+  //uint8_t test[NRF24L01_PAYLOAD] = "ciao so io :-)!!";
+  uint8_t test[NRF24L01_PAYLOAD] = "negretto amico!\n";
 
   //setup buffer
   for(i=0; i<sizeof(bufferout); i++)
