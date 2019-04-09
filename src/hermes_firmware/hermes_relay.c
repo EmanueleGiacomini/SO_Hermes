@@ -22,16 +22,37 @@
 #include "hermes_packets.h"
 #include "packet_handler.h"
 
+void cleanBuf(uint8_t* buf) {
+  int i;
+  for(i=0; i<NRF24L01_PAYLOAD; ++i) buf[i] = 0x00;
+}
 
 void flushBuf(PacketHandler* ph) {
   uint16_t bytes_to_write=ph->tx_size;
-  uint8_t c = 0x00;
-  for(int i=0;i<bytes_to_write;++i) {
-    c = buffer_read(ph->tx_buffer, &ph->tx_start, PACKET_SIZE_MAX);
-    //write(fd, &c, 1);
-    nrf24l01_write(&c);
+  uint8_t tx_buf[NRF24L01_PAYLOAD];
+  uint8_t end_buf[NRF24L01_PAYLOAD] = { NRF24L01_END_TRSM };
+  
+  // Starting to loop
+  int fixed_size = bytes_to_write - (bytes_to_write%NRF24L01_PAYLOAD);
+  int i;
+  for(i=0; i<fixed_size; ++i) {
+    if(!(i % NRF24L01_PAYLOAD)) {
+      nrf24l01_write(tx_buf);
+      cleanBuf(&tx_buf);
+    }
+    tx_buf[i % NRF24L01_PAYLOAD] = buffer_read(ph->tx_buffer, &ph->tx_start, PACKET_SIZE_MAX);
     --ph->tx_size;
   }
+  
+  // Preparing the rest
+  for(; i<bytes_to_write; ++i) {
+    tx_buf[i % NRF24L01_PAYLOAD] = buffer_read(ph->tx_buffer, &ph->tx_start, PACKET_SIZE_MAX);
+    --ph->tx_size;
+  }
+  
+  //tx_buf[++i] = NRF24L01_END_TRSM;
+  nrf24l01_write(tx_buf);
+
 }
 
 int main(int argc, char* argv[]) {
@@ -60,9 +81,6 @@ int main(int argc, char* argv[]) {
   PacketHandler _ph;
   PacketHandler* ph=&_ph;
   PacketHandler_init(ph);
-
-  uint8_t test[NRF24L01_PAYLOAD] = "ciao so io :-)!!";
-  
 
   //sending buffer addresses
   uint8_t sendpipe = 0;
@@ -94,19 +112,14 @@ int main(int argc, char* argv[]) {
       nrf24l01_settxaddr(addrtx5);
     }
     
-    
     motor_control_packet.speed++;
     motor_control_packet.mode=(motor_control_packet.mode+1)%2;
     PacketHandler_sendPacket(ph, (PacketHeader*)&motor_control_packet);
     flushBuf(ph);
     
-    //Uart_write(uart, motor_control_packet.speed);
-    //write buffer
-    //uint8_t writeret = nrf24l01_write(bufferout);
-
     sendpipe++;
     sendpipe%=6;
-    _delay_ms(3000);
+    _delay_ms(1000);
   }
 
   return 0;
@@ -119,10 +132,8 @@ int main(int argc, char* argv[]) {
 
 
 
-
-
-
-/* Old test
+/*
+// Old test
 int main(void) {
 
   struct Uart* uart=Uart_init(115200);
@@ -140,7 +151,7 @@ int main(void) {
   //init interrupt
   sei();
 
-  uint8_t test[NRF24L01_PAYLOAD] = "ciao so io :-)!!";
+  uint8_t test[NRF24L01_PAYLOAD] = "ABCDEFGHILMNOPQRSTUVZ1234567890Z";
   
   //setup buffer
   for(i=0; i<sizeof(bufferout); i++)

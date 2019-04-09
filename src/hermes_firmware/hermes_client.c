@@ -65,30 +65,36 @@ int main(int argc, char* argv[]) {
   PacketHandler* ph=&_ph;
   PacketHandler_init(ph);
   PacketHandler_addOperation(ph, &motor_control_packet_ops);
-  uint8_t c = 0x00;
-  uint8_t cnt = 0;
-  //main loop
+
+  uint8_t rx_buf[NRF24L01_PAYLOAD];
+  uint8_t size = 0, idx = 0, i = 0;  
+  
   while(1) {
-    //rx
     uint8_t pipe = 0;
     if(nrf24l01_readready(&pipe)) { //if data is ready
-      cnt++;
-      //read buffer
-      //nrf24l01_read(bufferin);
       
-      nrf24l01_read(&c);
-      PacketHandler_readByte(ph, c);
+      nrf24l01_read(rx_buf);
       
-      if(cnt%10 == 0) {
-        Uart_write(uart, motor_control_packet.speed);
-        Uart_write(uart, ' ');
-        Uart_write(uart, recv_packets);
-        Uart_write(uart, '\n');
+      // Size of the packet
+      if(rx_buf[0] == 0xAA && rx_buf[1] == 0x55) size = rx_buf[3];
+        
+      for(i=0; i<NRF24L01_PAYLOAD; ++i) {
+        if(idx == size+3) {
+          // A packet has been received
+          Uart_write(uart, motor_control_packet.speed);
+          Uart_write(uart, ' ');
+          Uart_write(uart, recv_packets);
+          Uart_write(uart, '\n');
+          size = 0;
+          idx = 0;
+          break;
+        }
+        PacketHandler_readByte(ph, rx_buf[i]);
+        ++idx;
       }
-      //Uart_write(uart, motor_control_packet.speed);
       
     }
-    _delay_ms(10);
+    _delay_ms(150);
   }
   
   return 0;
@@ -97,8 +103,8 @@ int main(int argc, char* argv[]) {
 
 
 
-/* old test
-//main here
+/*
+// old test
 int main(void) {
 
   struct Uart* uart=Uart_init(115200);
@@ -137,20 +143,22 @@ int main(void) {
   uint8_t addrtx4[NRF24L01_ADDRSIZE] = NRF24L01_ADDRP4;
   uint8_t addrtx5[NRF24L01_ADDRSIZE] = NRF24L01_ADDRP5;
 
-
+  uint8_t cnt = 0;
   //main loop
   while(1) {
 
     //rx
     uint8_t pipe = 0;
     if(nrf24l01_readready(&pipe)) { //if data is ready
-
+      cnt++;
       //read buffer
       nrf24l01_read(bufferin);
-
+    
       for(i=0; i<sizeof(bufferin); i++) {
         Uart_write(uart, bufferin[i]);
       }
+      Uart_write(uart, ' ');
+      Uart_write(uart, cnt);
       
     }
     _delay_ms(10);

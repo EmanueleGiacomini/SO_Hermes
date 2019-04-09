@@ -39,7 +39,7 @@
 #define NRF24L01_CH 76
 
 //payload lenght
-#define NRF24L01_PAYLOAD 16 // was 16
+#define NRF24L01_PAYLOAD 32 // was 16
 
 //auto ack enabled
 #define NRF24L01_ACK 1
