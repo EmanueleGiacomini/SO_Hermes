@@ -24,6 +24,7 @@ digio.o\
 delay.o\
 uart.o\
 spi.o\
+encoder.o\
 
 COMM_OBJS=packet_handler.o\
 buffer.o
