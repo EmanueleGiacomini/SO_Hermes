@@ -29,6 +29,7 @@ COMM_OBJS=packet_handler.o\
 buffer.o
 
 FIRMWARE_OBJS=hermes_nRF24L01.o\
+hermes_comm.o\
 
 BINS= digio_test.elf\
 uart_test.elf\
@@ -56,6 +57,12 @@ all: $(BINS)
 #peripherial test
 %.o:	$(PREFIX)/src/hermes_test/%.c 
 	$(CC) $(CC_OPTS) -c  $<
+
+hermes_relay.elf:	hermes_relay.o $(ARCH_OBJS) $(COMM_OBJS) $(FIRMWARE_OBJS)
+	$(CC) $(CC_OPTS) -D_RELAY -o $@ $^
+
+hermes_client.elf:	hermes_client.o $(ARCH_OBJS) $(COMM_OBJS) $(FIRMWARE_OBJS)
+	$(CC) $(CC_OPTS) -D_RELAY -o $@ $^ 
 
 %.elf:	%.o $(ARCH_OBJS) $(COMM_OBJS) $(FIRMWARE_OBJS)
 	$(CC) $(CC_OPTS) -o $@ $^ 

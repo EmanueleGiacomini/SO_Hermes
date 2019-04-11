@@ -22,7 +22,7 @@ typedef struct {
   uint8_t mode;
   uint8_t speed;
 } MotorControlPacket;
-#define ID_MOTOR_CONTROL_PACKET 1
+#define ID_MOTOR_CONTROL_PACKET 0
 
 typedef struct {
   PacketHeader h;
@@ -30,6 +30,6 @@ typedef struct {
   int16_t desidered_speed;
   int16_t measured_speed;
 } MotorStatusPacket;
-#define ID_MOTOR_STATUS_PACKET 2
+#define ID_MOTOR_STATUS_PACKET 1
 
 #pragma pack(pop)

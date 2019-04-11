@@ -27,24 +27,27 @@ void Packet_print(PacketHeader* p) {
 
 static int recv_packets=0;
 
-void receiveFn(PacketHeader* p) {
+void receiveFn(PacketHeader* p, void* args) {
   ++recv_packets;
+  memcpy((PacketHeader*)args, p, p->size);
   Packet_print(p);
   fflush(stdout);
 }
 
 void _flushBuffer(int fd, PacketHandler* ph) {
-  uint16_t bytes_to_write=ph->tx_size;
-  for(int i=0;i<bytes_to_write;++i) {
-    uint8_t c=buffer_read(ph->tx_buffer, &ph->tx_start, PACKET_SIZE_MAX);
+  //printf("#--FB--#####################\n");
+  uint8_t sendb=PacketHandler_txSize(ph);
+  //printf("Txsize: %d\n", sendb);
+  for(int i=0;i<sendb;++i) {
+    uint8_t c=PacketHandler_writeByte(ph);
+    //printf("%x",c);
     write(fd, &c, 1);
-    --ph->tx_size;
   }
+  //printf("\n");
 }
 
 
 int pipefd[2];
-
 
 void receiverFn(void) {
 
@@ -62,13 +65,11 @@ void receiverFn(void) {
   };
   PacketOperation motor_control_packet_ops={
     .id=ID_MOTOR_CONTROL_PACKET,
-    .exp_size=sizeof(MotorControlPacket),
-    .rx_buf=(uint8_t*)&motor_control_packet,
-    .rx_size=sizeof(MotorControlPacket),
-    .rx_start=0,
-    .rx_end=0,
+    .size=sizeof(motor_control_packet),
+    .on_receive_fn=0,
+    .args=0,
     .on_receive_fn=receiveFn,
-    .args=&motor_control_packet,
+    .args=(void*)&motor_control_packet,
   };
   
   PacketHandler _ph;
@@ -79,20 +80,25 @@ void receiverFn(void) {
   close(pipefd[1]);
   uint8_t c;
   uint8_t ctr=0;
+  int8_t ret=0;
   while(1) {
-    if(read(pipefd[0], &c, 1)!=1) {
+    if(read(pipefd[0], &c, 1)==-1) {
       printf("Error during read...\n");
       break;
     }
     //printf("%x", c);
     ctr++;
-    //if(ctr%(sizeof(MotorControlPacket)+2)==0) {
+    if(ctr%(sizeof(MotorControlPacket)+2)==0) {
       //printf("\n");
-      //}
-    if(PacketHandler_readByte(ph, c)) {
-      printf("ERROR while reading packet...\n");
     }
+    
+    ret=PacketHandler_readByte(ph, c);
+    if(ret) {
+      printf("ERROR %d while reading packet...\n", ret);
+    }
+    
   }
+  printf("[Receiver] Closing...\n");
   close(pipefd[0]);
   return;
 }
@@ -121,15 +127,16 @@ void transmitterFn(void) {
     motor_control_packet.mode=(motor_control_packet.mode+1)%2;
     PacketHandler_sendPacket(ph, (PacketHeader*)&motor_control_packet);
     _flushBuffer(pipefd[1], ph);
-    usleep(100000);
+    usleep(10000);
   }
+  printnf("[Transmitter] Closing...\n");
   close(pipefd[1]);
   return;
 }
 
 
 int main(int argc, char** argv) {
-  if(pipe2(pipefd, 0)) {
+  if(pipe(pipefd)) {
     printf("Error while executing pipe2...exiting\n");
     return 1;
   }  

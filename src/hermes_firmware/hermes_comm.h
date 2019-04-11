@@ -7,15 +7,15 @@
 #include "packet_handler.h"
 #include "packet_status.h"
 
-typedef struct {
-  PacketHandler phandler;
-  
-}HermesComm;
+#define O_UART 0x01
+#define O_NRF24L01 0x02
 
-PacketStatus HermesComm_writePacket(HermesComm*, PacketHeader*);
+void HermesComm_init(uint8_t);
 
-PacketStatus HermesComm_readPacket(HermesComm*, PacketHeader*);
+PacketStatus HermesComm_sendPacket(PacketHeader*, uint8_t);
 
-void HermesComm_handle(HermesComm*);
+PacketStatus HermesComm_readPacket(PacketHeader*);
+
+PacketStatus HermesComm_handle(void);
 
 

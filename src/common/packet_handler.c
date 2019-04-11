@@ -21,7 +21,7 @@ void PacketHandler_init(PacketHandler* h) {
 }
 
 void PacketHandler_addOperation(PacketHandler* h, PacketOperation* o) {
-  h->packet_op[o->id]=*o;
+  h->packet_ops[o->id]=*o;
 }
 
 static uint8_t computeCS(PacketHeader* _p) {
@@ -34,6 +34,29 @@ static uint8_t computeCS(PacketHeader* _p) {
 }
 
 PacketStatus PacketHandler_sendPacket(PacketHandler* h, PacketHeader* _p) {
+  uint8_t cs=computeCS(_p);
+  _p->checksum=cs;
+  uint8_t*p=(uint8_t*)_p;
+  uint8_t*p_end=p+_p->size;
+
+  h->tx_end=h->tx_buffer; // reset buffer start/end
+  h->tx_start=h->tx_buffer;
+
+  uint8_t tx_size=2;
+  uint8_t* tx_end=h->tx_end;
+  *tx_end=0xAA;//insert 0xAA and 0x55 to initialize protocol
+  tx_end++;
+  *tx_end=0x55;
+  tx_end++;
+  while(p!=p_end) {
+    *tx_end=*p;
+    ++tx_size;
+    ++tx_end;
+    ++p;    
+  }
+  h->tx_size=tx_size;
+  return Success;
+  /**
   uint8_t checksum=computeCS(_p);
   _p->checksum=checksum;
   uint8_t* p=(uint8_t*)_p;
@@ -50,18 +73,24 @@ PacketStatus PacketHandler_sendPacket(PacketHandler* h, PacketHeader* _p) {
     ++(*tx_size);
     ++p;
   }
-  
   return Success;
+  **/
 }
 
 PacketStatus PacketHandler_readByte(PacketHandler* h, uint8_t c) {
   return (*h->receive_fn)(h, c);
 }
 
+uint8_t PacketHandler_txSize(PacketHandler* h) {
+  return h->tx_size;
+}
+
 uint8_t PacketHandler_writeByte(PacketHandler* h) {
   if(h->tx_size==0)
     return 0;
-  uint8_t c=buffer_read(h->tx_buffer, &h->tx_start, PACKET_SIZE_MAX);
+  uint8_t *tx_start=h->tx_start;
+  uint8_t c=*tx_start;
+  ++h->tx_start;
   --h->tx_size;
   return c;
 }
@@ -70,78 +99,75 @@ uint8_t PacketHandler_writeByte(PacketHandler* h) {
 PacketStatus _rxAA(PacketHandler* h, uint8_t c) {
   if(c==0xAA) {
     h->receive_fn=_rx55;
+    return Success;
   }
-  return Success;
+  return UnknownType;
 }
 
 PacketStatus _rx55(PacketHandler* h, uint8_t c) {
   if(c==0x55) {
     h->receive_fn=_rxId;
+    return Success;
   }
-  else {
-    h->receive_fn=_rxAA;
-  }
-  return Success;
+  h->receive_fn=_rxAA;
+  return UnknownType;
 }
 
 PacketStatus _rxId(PacketHandler* h, uint8_t c) {
   if(c>=MAX_PACKET_TYPE) {
-    h->receive_fn=&_rxAA;
+    h->receive_fn=_rxAA;
     return UnknownType;
-  } else {
-    h->curr_id=c;
-    h->rx_buffer=(h->packet_op[c].rx_buf);
-    h->receive_fn=_rxSize;
-    return Success;
   }
+  h->current_op=&h->packet_ops[c];
+  h->receive_fn=_rxSize;
+  return Success;
 }
 PacketStatus _rxSize(PacketHandler* h, uint8_t c) {
-  if(c!=h->packet_op[h->curr_id].exp_size) {
-    h->receive_fn=&_rxAA;
-    h->rx_buffer=0;
-    h->curr_packet=0;
-    h->rx_end=0;
-    h->rx_size=0;
+  if(h->current_op->size!=c) {
+    h->receive_fn=_rxAA;
+    h->current_op=0;
     return WrongSize;
-  } else {
-    h->rx_end=h->packet_op[h->curr_id].rx_end;
-    h->rx_size=h->packet_op[h->curr_id].rx_size;
-    h->curr_packet=h->rx_buffer+h->rx_end;
-    buffer_insert(h->rx_buffer, &h->rx_end, h->rx_size, h->curr_id);
-    h->rx_checksum=h->curr_id;
-    buffer_insert(h->rx_buffer, &h->rx_end, h->rx_size, c);
-    h->rx_checksum^=c;
-    h->bytes_to_read=c-2; // because we already read ID and SIZE
-    h->receive_fn=_rxPayload;
-    return Success;
   }
+  // inserting id and size
+  h->rx_end=h->rx_buffer+c; // buffer_end = buffer_start + packet_size
+  h->rx_start=h->rx_buffer;
+  h->rx_buffer[0]=h->current_op->id;
+  h->rx_buffer[1]=c;
+  h->rx_start+=2;
+  // computing checksum
+  h->rx_checksum=h->rx_buffer[0];
+  h->rx_checksum^=c;
+  h->receive_fn=_rxPayload;
+  return Success;
 }
 
 PacketStatus _rxPayload(PacketHandler* h, uint8_t c) {
-  h->rx_checksum^=c;
-  buffer_insert(h->rx_buffer, &h->rx_end, h->rx_size, c);
-  h->bytes_to_read--;
-  if(h->bytes_to_read==0) {
-    h->receive_fn=_rxCs;
+  h->rx_checksum^=c; // computing checksum
+  (*h->rx_start)=c; // inserting byte
+  h->rx_start++;
+  if(h->rx_end==h->rx_start) {
+    h->rx_start=0;
+    h->rx_end=0;
+    h->receive_fn=_rxCs; // launching ChecksumFn
     return (*h->receive_fn)(h, h->rx_checksum);
   }
   return Success;
 }
 
 PacketStatus _rxCs(PacketHandler* h, uint8_t c) {
-  // TODO
+  h->current_packet=(PacketHeader*)h->rx_buffer;
+  uint8_t recv_cs=h->rx_checksum; // received checksum
+  recv_cs^=h->current_packet->checksum; // transmitter computed checksum
+  h->current_packet->checksum=0;
+  uint8_t computed_cs=computeCS(h->current_packet);
+  h->current_packet->checksum=recv_cs;
   
-  uint8_t recv_cs=h->rx_checksum;
-  recv_cs^=((PacketHeader*)(h->curr_packet))->checksum;
-  ((PacketHeader*)(h->curr_packet))->checksum=0;
-  uint8_t computed_cs=computeCS((PacketHeader*)h->curr_packet);
-  ((PacketHeader*)(h->curr_packet))->checksum=recv_cs;
   if(recv_cs!=computed_cs) {
     h->receive_fn=_rxAA;
     return ChecksumError;
   }
-  (*h->packet_op[h->curr_id].on_receive_fn)(h->packet_op[h->curr_id].args);
+  receiveFn_t recvFn=h->current_op->on_receive_fn;
+  (*recvFn)(h->current_packet, h->current_op->args);
   h->receive_fn=_rxAA;
-  
   return Success;
 }

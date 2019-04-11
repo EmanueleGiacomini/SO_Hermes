@@ -50,16 +50,14 @@ int main(int argc, char* argv[]) {
     .mode=0,
     .speed=0
   };
+
   PacketOperation motor_control_packet_ops={
     .id=ID_MOTOR_CONTROL_PACKET,
-    .exp_size=sizeof(MotorControlPacket),
-    .rx_buf=(uint8_t*)&motor_control_packet,
-    .rx_size=sizeof(MotorControlPacket),
-    .rx_start=0,
-    .rx_end=0,
+    .size=sizeof(MotorControlPacket),
     .on_receive_fn=receiveFn,
     .args=&motor_control_packet,
   };
+
   
   PacketHandler _ph;
   PacketHandler* ph=&_ph;
