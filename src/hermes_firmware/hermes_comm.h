@@ -7,6 +7,11 @@
 #include "packet_handler.h"
 #include "packet_status.h"
 
+#include "hermes_nRF24L01.h"
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <util/delay.h>
+
 #define O_UART 0x01
 #define O_NRF24L01 0x02
 

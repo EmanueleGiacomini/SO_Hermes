@@ -30,7 +30,6 @@ void cleanBuf(uint8_t* buf) {
 void flushBuf(PacketHandler* ph) {
   uint16_t bytes_to_write=ph->tx_size;
   uint8_t tx_buf[NRF24L01_PAYLOAD];
-  uint8_t end_buf[NRF24L01_PAYLOAD] = { NRF24L01_END_TRSM };
   
   // Starting to loop
   int fixed_size = bytes_to_write - (bytes_to_write%NRF24L01_PAYLOAD);

@@ -75,6 +75,16 @@ struct Uart* uart_1;
 PacketHandler uart_handler;
 PacketHandler nrf_handler;
 
+// nRF24L01 transmitting pipes
+static uint8_t sendpipe;
+static uint8_t addrtx0[NRF24L01_ADDRSIZE] = NRF24L01_ADDRP0;
+static uint8_t addrtx1[NRF24L01_ADDRSIZE] = NRF24L01_ADDRP1;
+static uint8_t addrtx2[NRF24L01_ADDRSIZE] = NRF24L01_ADDRP2;
+static uint8_t addrtx3[NRF24L01_ADDRSIZE] = NRF24L01_ADDRP3;
+static uint8_t addrtx4[NRF24L01_ADDRSIZE] = NRF24L01_ADDRP4;
+static uint8_t addrtx5[NRF24L01_ADDRSIZE] = NRF24L01_ADDRP5;
+
+
 void HermesComm_init(uint8_t interface) {
   active_interfaces=interface;
   if((interface>>O_UART)&0x1) {
@@ -91,17 +101,89 @@ void HermesComm_init(uint8_t interface) {
   }
   if((interface>>O_NRF24L01)&0x1) {
     PacketHandler_init(&nrf_handler);
-    // TODO init NRF24L01
+#ifdef _CLIENT
+    PacketHandler_addOperation(&nrf_handler, &motor_control_packet_op);
+#elseif _RELAY
+    PacketHandler_addOperation(&nrf_handler, &motor_control_packet_op);
+    PacketHandler_addOperation(&nrf_handler, &motor_status_packet_op);
+#endif
+
+    nrf24l01_init(); // Initializing nrf24l01 chip
+    sei(); // Enabling use of interrupts
+    sendpipe = 0;
+    
   }
 }
 
 PacketStatus HermesComm_sendPacket(PacketHeader* h, uint8_t interface) {
   if((interface>>O_UART)&0x1) {
-    // TODO transmit through UART
-  } 
-  if((interface>>O_NRF24L01)&0x1) {
-    // TODO transmit through NRF24L01
+    PacketHandler* ph=&uart_handler;
+    PacketHandler_sendPacket(ph, h);
+    
+    uint8_t bytes_to_write= PacketHandler_txSize(ph);
+    int i;
+    
+    for(i=0; i<bytes_to_write; ++i) {
+      uint8_t c=PacketHandler_writeByte(ph);
+      Uart_write(uart_1, c);
+    }
+    
   }
+  if((interface>>O_NRF24L01)&0x1) {
+    PacketHandler* ph=&nrf_handler;
+    
+    // Setting the right pipe address
+    switch(sendpipe) {
+    case 0:
+      nrf24l01_settxaddr(addrtx0);
+      break;
+    case 1:
+      nrf24l01_settxaddr(addrtx1);
+      break;
+    case 2:
+      nrf24l01_settxaddr(addrtx2);
+      break;
+    case 3:
+      nrf24l01_settxaddr(addrtx3);
+      break;
+    case 4:
+      nrf24l01_settxaddr(addrtx4);
+      break;
+    case 5:
+      nrf24l01_settxaddr(addrtx5);
+      break;
+    default:
+      return UnknownType;
+    }
+
+    PacketHandler_sendPacket(ph, h);
+
+    uint8_t bytes_to_write=PacketHandler_txSize(ph);
+    uint8_t tx_buf[NRF24L01_PAYLOAD];
+
+    // Starting transmission of the packet in blocks of NRF24L01_PAYLOAD bytes
+    int i, fixed_size = bytes_to_write - (bytes_to_write%NRF24L01_PAYLOAD);
+    
+    for(i=0; i<fixed_size; ++i) {
+      if(!(i % NRF24L01_PAYLOAD)) {
+        nrf24l01_write(tx_buf);
+      }
+      tx_buf[i % NRF24L01_PAYLOAD] = PacketHandler_writeByte(ph);
+    }
+
+    // Sending the rest
+    for(; i<bytes_to_write; ++i) {
+      tx_buf[i % NRF24L01_PAYLOAD] = PacketHandler_writeByte(ph);
+    }
+
+    nrf24l01_write(tx_buf);
+
+    // Using all the pipes to transmit
+    sendpipe++;
+    sendpipe%=6;
+  }
+  
+  return Success;
 }
 
 PacketStatus HermesComm_readPacket(PacketHeader* h) {
@@ -111,15 +193,43 @@ PacketStatus HermesComm_readPacket(PacketHeader* h) {
 
 PacketStatus HermesComm_handle(void) {
   if((active_interfaces>>O_UART)&0x1) {
-    // TODO read bytes buffered from UART
+    PacketHandler* ph=&uart_handler;
+    
+    while(Uart_available(uart_1)) {
+      uint8_t c = Uart_read(uart_1);
+      PacketHandler_readByte(ph, c);
+    }
+  
   }
   if((active_interfaces>>O_NRF24L01)&0x1) {
-    // TODO read bytes buffered from NRF24L01
+    PacketHandler* ph=&nrf_handler;
+    
+    uint8_t rx_buf[NRF24L01_PAYLOAD];
+    uint8_t size = 0, idx = 0, i = 0, pipe = 0;
+    
+    // Check if data is avaiable
+    if(nrf24l01_readready(&pipe)) {
+      nrf24l01_read(rx_buf); // Read bytes and put in rx_buf
+      // Size of the packet
+      if(rx_buf[0] == 0xAA && rx_buf[1] == 0x55) size = rx_buf[3];
+
+      for(i=0; i<NRF24L01_PAYLOAD; ++i) {
+        if(idx == size+3) {
+          // A packet has been received
+          size = 0;
+          idx = 0;
+          break;
+        }
+        PacketHandler_readByte(ph, rx_buf[i]);
+        ++idx;
+      }
+    }
   }
+  
   return Success;
 }
 
 void HermesComm_receivePacketFn(PacketHeader* p, void* _args) {
-  
+  // Do something, like incrementing received packets
   return;
 }
