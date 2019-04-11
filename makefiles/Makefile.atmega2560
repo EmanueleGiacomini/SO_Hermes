@@ -62,7 +62,7 @@ hermes_relay.elf:	hermes_relay.o $(ARCH_OBJS) $(COMM_OBJS) $(FIRMWARE_OBJS)
 	$(CC) $(CC_OPTS) -D_RELAY -o $@ $^
 
 hermes_client.elf:	hermes_client.o $(ARCH_OBJS) $(COMM_OBJS) $(FIRMWARE_OBJS)
-	$(CC) $(CC_OPTS) -D_RELAY -o $@ $^ 
+	$(CC) $(CC_OPTS) -D_CLIENT -o $@ $^ 
 
 %.elf:	%.o $(ARCH_OBJS) $(COMM_OBJS) $(FIRMWARE_OBJS)
 	$(CC) $(CC_OPTS) -o $@ $^ 
