@@ -20,7 +20,24 @@
 #include <fcntl.h>
 #include "hermes_packets.h"
 #include "packet_handler.h"
+#include "hermes_globals.h"
+#include "hermes_comm.h"
 
+
+int main(int argc, char* argv[]) {
+  HermesComm_init(O_NRF24L01|O_UART);
+  
+  while(1) {
+    motor_control.speed++;
+    HermesComm_sendPacket(&motor_control.h, O_UART|O_NRF24L01);
+    _delay_ms(3000);
+  }
+  
+  return 0;
+}
+
+
+/*
 static int recv_packets=0;
 
 void receiveFn(PacketHeader* p) {
@@ -99,7 +116,7 @@ int main(int argc, char* argv[]) {
   
 }
 
-
+*/
 
 /*
 // old test

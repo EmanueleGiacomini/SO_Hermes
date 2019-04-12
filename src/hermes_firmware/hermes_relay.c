@@ -1,7 +1,7 @@
 /*
- * 
+ *
  * Hermes relay between host and client, trasmitting to client
- * 
+ *
 */
 
 #include <stdio.h>
@@ -21,7 +21,27 @@
 #include <fcntl.h>
 #include "hermes_packets.h"
 #include "packet_handler.h"
+#include "hermes_globals.h"
+#include "hermes_comm.h"
 
+
+int main(int argc, char* argv[]) {
+
+  HermesComm_init(O_NRF24L01|O_UART);
+
+  while(1) {
+    HermesComm_handle();
+    if(HermesComm_readPacket(&motor_control.h) == Success) {
+      HermesComm_sendPacket(&motor_control.h, O_UART);
+    }
+  }
+  
+  return 0;
+}
+
+
+
+/*
 void cleanBuf(uint8_t* buf) {
   int i;
   for(i=0; i<NRF24L01_PAYLOAD; ++i) buf[i] = 0x00;
@@ -30,7 +50,7 @@ void cleanBuf(uint8_t* buf) {
 void flushBuf(PacketHandler* ph) {
   uint16_t bytes_to_write=ph->tx_size;
   uint8_t tx_buf[NRF24L01_PAYLOAD];
-  
+
   // Starting to loop
   int fixed_size = bytes_to_write - (bytes_to_write%NRF24L01_PAYLOAD);
   int i;
@@ -42,13 +62,13 @@ void flushBuf(PacketHandler* ph) {
     tx_buf[i % NRF24L01_PAYLOAD] = buffer_read(ph->tx_buffer, &ph->tx_start, PACKET_SIZE_MAX);
     --ph->tx_size;
   }
-  
+
   // Preparing the rest
   for(; i<bytes_to_write; ++i) {
     tx_buf[i % NRF24L01_PAYLOAD] = buffer_read(ph->tx_buffer, &ph->tx_start, PACKET_SIZE_MAX);
     --ph->tx_size;
   }
-  
+
   //tx_buf[++i] = NRF24L01_END_TRSM;
   nrf24l01_write(tx_buf);
 
@@ -60,10 +80,10 @@ int main(int argc, char* argv[]) {
 
   //init nrf24l01
   nrf24l01_init();
-  
+
   //init interrupt
   sei();
-  
+
   MotorControlPacket motor_control_packet = {
     {
       .id=ID_MOTOR_CONTROL_PACKET,
@@ -110,23 +130,22 @@ int main(int argc, char* argv[]) {
       //set tx address for pipe 5
       nrf24l01_settxaddr(addrtx5);
     }
-    
+
     motor_control_packet.speed++;
     motor_control_packet.mode=(motor_control_packet.mode+1)%2;
     PacketHandler_sendPacket(ph, (PacketHeader*)&motor_control_packet);
     flushBuf(ph);
-    
+
     sendpipe++;
     sendpipe%=6;
     _delay_ms(1000);
   }
 
   return 0;
-  
+
 }
 
-
-
+/*
 
 
 
@@ -145,13 +164,13 @@ int main(void) {
 
   //init nrf24l01
   nrf24l01_init();
-  
+
 
   //init interrupt
   sei();
 
   uint8_t test[NRF24L01_PAYLOAD] = "ABCDEFGHILMNOPQRSTUVZ1234567890Z";
-  
+
   //setup buffer
   for(i=0; i<sizeof(bufferout); i++)
     bufferout[i] = test[i];

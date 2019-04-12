@@ -55,7 +55,7 @@ void* packet_buffers[MAX_PACKET_TYPE]={
 
 HandlePacketFn motor_control_args ={
   .buffer=motor_control_packet_buffer,
-  .operations=TX_NRF,
+  .operations=TX_NRF|TX_UART,
 };
 
 HandlePacketFn motor_status_args ={
@@ -70,7 +70,7 @@ PacketOperation motor_control_packet_op={
   .on_receive_fn=HermesComm_receivePacketFn,
   .args=(void*)&motor_control_args
 };
-<
+
 PacketOperation motor_status_packet_op={
   .id=ID_MOTOR_STATUS_PACKET,
   .size=sizeof(MotorStatusPacket),
@@ -99,7 +99,7 @@ static uint8_t addrtx5[NRF24L01_ADDRSIZE] = NRF24L01_ADDRP5;
 
 void HermesComm_init(uint8_t interface) {
   active_interfaces=interface;
-  if((interface>>O_UART)&0x1) {
+  if(interface & O_UART) {
     PacketHandler_init(&uart_handler);
 #ifdef _CLIENT
     PacketHandler_addOperation(&uart_handler, &motor_control_packet_op);
@@ -111,7 +111,7 @@ void HermesComm_init(uint8_t interface) {
     // TODO init UART
     uart_1=Uart_init(115200);
   }
-  if((interface>>O_NRF24L01)&0x1) {
+  if(interface & O_NRF24L01) {
     PacketHandler_init(&nrf_handler);
 #ifdef _CLIENT
     PacketHandler_addOperation(&nrf_handler, &motor_control_packet_op);
@@ -128,7 +128,7 @@ void HermesComm_init(uint8_t interface) {
 }
 
 PacketStatus HermesComm_sendPacket(PacketHeader* h, uint8_t interface) {
-  if((interface>>O_UART)&0x1) {
+  if(interface & O_UART) {
     PacketHandler* ph=&uart_handler;
     PacketHandler_sendPacket(ph, h);
     
@@ -141,7 +141,7 @@ PacketStatus HermesComm_sendPacket(PacketHeader* h, uint8_t interface) {
     }
     
   }
-  if((interface>>O_NRF24L01)&0x1) {
+  if(interface & O_NRF24L01) {
     PacketHandler* ph=&nrf_handler;
     
     // Setting the right pipe address
@@ -209,7 +209,7 @@ PacketStatus HermesComm_readPacket(PacketHeader* h) {
 }
 
 PacketStatus HermesComm_handle(void) {
-  if((active_interfaces>>O_UART)&0x1) {
+  if(active_interfaces & O_UART) {
     PacketHandler* ph=&uart_handler;
     
     while(Uart_available(uart_1)) {
@@ -218,7 +218,7 @@ PacketStatus HermesComm_handle(void) {
     }
   
   }
-  if((active_interfaces>>O_NRF24L01)&0x1) {
+  if(active_interfaces & O_NRF24L01) {
     PacketHandler* ph=&nrf_handler;
     
     uint8_t rx_buf[NRF24L01_PAYLOAD];
@@ -228,6 +228,7 @@ PacketStatus HermesComm_handle(void) {
     if(nrf24l01_readready(&pipe)) {
       nrf24l01_read(rx_buf); // Read bytes and put in rx_buf
       // Size of the packet
+      
       if(rx_buf[0] == 0xAA && rx_buf[1] == 0x55) size = rx_buf[3];
 
       for(i=0; i<NRF24L01_PAYLOAD; ++i) {
