@@ -8,12 +8,12 @@ INCLUDE_DIRS=-I$(PREFIX)/src/arch/include -I$(PREFIX)/src/common -I$(PREFIX)/src
 
 CC_OPTS=-Wall --std=gnu99 -DF_CPU=16000000UL -O3 -funsigned-char -funsigned-bitfields  -fshort-enums -Wstrict-prototypes -mmcu=atmega2560 -D_ARDUINO_MEGA_2560 $(INCLUDE_DIRS)
 
-ifeq ($(MAKECMDGOALS), hermes_relay.hex)
-     CC_OPTS+=-D_RELAY
-     $(info Building RELAY)
+ifneq (, $(findstring relay, $(MAKECMDGOALS)))
+      CC_OPTS+=-D_RELAY
+      $(info Building RELAY)
 else
      CC_OPTS+=-D_CLIENT
-     $(info Building CLIENT)
+     $(info Building CLIENT)        
 endif
 
 $(info Current CC_OPTS: $(CC_OPTS))
@@ -42,6 +42,7 @@ buffer.o
 
 FIRMWARE_OBJS=hermes_nRF24L01.o\
 hermes_comm.o\
+hermes_globals.o\
 
 BINS= digio_test.elf\
 uart_test.elf\

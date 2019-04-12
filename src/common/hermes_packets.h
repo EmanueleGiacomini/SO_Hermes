@@ -32,4 +32,13 @@ typedef struct {
 } MotorStatusPacket;
 #define ID_MOTOR_STATUS_PACKET 1
 
+typedef struct {
+  PacketHeader h;
+  uint16_t rx_packets;
+  uint16_t rx_errors;
+  uint16_t tx_packets;
+  uint16_t idle_cycles;
+} SystemStatusPacket;
+#define ID_SYSTEM_STATUS_PACKET 2
+
 #pragma pack(pop)

@@ -3,6 +3,7 @@
  **/
 
 #include "hermes_comm.h"
+#include "hermes_globals.h"
 #include "uart.h"
 #include <string.h>
 
@@ -247,7 +248,7 @@ PacketStatus HermesComm_handle(void) {
 
 void HermesComm_receivePacketFn(PacketHeader* p, void* _args) {
   // Do something, like incrementing received packets
-  received_packets_count++;
+  system_status.rx_packets++;
   HandlePacketFn* args=(HandlePacketFn*)_args;
   uint8_t ops=args->operations;
   if(ops&TX_UART) {
@@ -264,6 +265,6 @@ void HermesComm_receivePacketFn(PacketHeader* p, void* _args) {
       ++buffer_size[pid];
       buffer_end[pid]=(buffer_end[pid]+1)%PACKET_BUFFER_SIZE;
     }
-  }  
+  }
   return;
 }
