@@ -4,6 +4,7 @@
 
 #include "hermes_comm.h"
 #include "uart.h"
+#include <string.h>
 
 #define PACKET_BUFFER_SIZE 8
 
@@ -12,8 +13,6 @@ void HermesComm_receivePacketFn(PacketHeader*, void*);
 static uint8_t buffer_start[MAX_PACKET_TYPE];
 static uint8_t buffer_end[MAX_PACKET_TYPE];
 static uint16_t buffer_size[MAX_PACKET_TYPE];
-
-void* packet_buffers[MAX_PACKET_TYPE];
 
 static uint16_t received_packets_count=0;
 
@@ -29,13 +28,13 @@ typedef struct {
 
 #ifdef _CLIENT
 MotorControlPacket motor_control_packet_buffer[PACKET_BUFFER_SIZE];
-packet_buffers={
-  motor_control_packet_buffer,
+void* packet_buffers[MAX_PACKET_TYPE]={
+  (void*)motor_control_packet_buffer,
 };
 
 HandlePacketFn motor_control_args ={
   .buffer=motor_control_packet_buffer,
-  .operations=COPY;
+  .operations=COPY,
 };
 
 PacketOperation motor_control_packet_op={
@@ -45,15 +44,14 @@ PacketOperation motor_control_packet_op={
   .args=(void*)&motor_control_args
 };
 
-#elseif _RELAY
-
+#elif _RELAY
 MotorControlPacket motor_control_packet_buffer[PACKET_BUFFER_SIZE];
 MotorStatusPacket motor_status_packet_buffer[PACKET_BUFFER_SIZE];
-
-packet_buffers={
-  motor_control_packet_buffer,
-  motor_status_packet_buffer,
+void* packet_buffers[MAX_PACKET_TYPE]={
+  (void*)motor_control_packet_buffer,
+  (void*)motor_status_packet_buffer,
 };
+
 HandlePacketFn motor_control_args ={
   .buffer=motor_control_packet_buffer,
   .operations=TX_NRF,
@@ -104,7 +102,7 @@ void HermesComm_init(uint8_t interface) {
     PacketHandler_init(&uart_handler);
 #ifdef _CLIENT
     PacketHandler_addOperation(&uart_handler, &motor_control_packet_op);
-#elseif _RELAY
+#elif _RELAY
     PacketHandler_addOperation(&uart_handler, &motor_control_packet_op);
     PacketHandler_addOperation(&uart_handler, &motor_status_packet_op);
 #endif
@@ -116,7 +114,7 @@ void HermesComm_init(uint8_t interface) {
     PacketHandler_init(&nrf_handler);
 #ifdef _CLIENT
     PacketHandler_addOperation(&nrf_handler, &motor_control_packet_op);
-#elseif _RELAY
+#elif _RELAY
     PacketHandler_addOperation(&nrf_handler, &motor_control_packet_op);
     PacketHandler_addOperation(&nrf_handler, &motor_status_packet_op);
 #endif

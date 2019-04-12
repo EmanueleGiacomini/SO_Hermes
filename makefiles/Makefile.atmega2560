@@ -5,9 +5,19 @@ ARCH=arch/atmega2560
 CC=avr-gcc
 PREFIX=../..
 INCLUDE_DIRS=-I$(PREFIX)/src/arch/include -I$(PREFIX)/src/common -I$(PREFIX)/src/hermes_firmware -I$(PREFIX)/src/hermes_client
-OP_MODE?=
 
 CC_OPTS=-Wall --std=gnu99 -DF_CPU=16000000UL -O3 -funsigned-char -funsigned-bitfields  -fshort-enums -Wstrict-prototypes -mmcu=atmega2560 -D_ARDUINO_MEGA_2560 $(INCLUDE_DIRS)
+
+ifeq ($(MAKECMDGOALS), hermes_relay.hex)
+     CC_OPTS+=-D_RELAY
+     $(info Building RELAY)
+else
+     CC_OPTS+=-D_CLIENT
+     $(info Building CLIENT)
+endif
+
+$(info Current CC_OPTS: $(CC_OPTS))
+
 
 AVRDUDE=avrdude
 AVRDUDE_PORT=/dev/ttyACM0
@@ -50,7 +60,7 @@ all: $(BINS)
 
 #firmware objects
 %.o:	$(PREFIX)/src/hermes_firmware/%.c 
-	$(CC) $(CC_OPTS) -D$(OP_MODE) -c  $<
+	$(CC) $(CC_OPTS) -c  $<
 
 #peripherials
 %.o:	$(PREFIX)/src/$(ARCH)/%.c 
@@ -61,10 +71,10 @@ all: $(BINS)
 	$(CC) $(CC_OPTS) -c  $<
 
 hermes_relay.elf:	hermes_relay.o $(ARCH_OBJS) $(COMM_OBJS) $(FIRMWARE_OBJS)
-	$(CC) $(CC_OPTS) -D_RELAY -o $@ $^
+	$(CC) $(CC_OPTS) -o $@ $^
 
 hermes_client.elf:	hermes_client.o $(ARCH_OBJS) $(COMM_OBJS) $(FIRMWARE_OBJS)
-	$(CC) $(CC_OPTS) -D_CLIENT -o $@ $^ 
+	$(CC) $(CC_OPTS) -o $@ $^ 
 
 %.elf:	%.o $(ARCH_OBJS) $(COMM_OBJS) $(FIRMWARE_OBJS)
 	$(CC) $(CC_OPTS) -o $@ $^ 
