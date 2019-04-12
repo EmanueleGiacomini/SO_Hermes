@@ -12,25 +12,16 @@
 #include "hermes_packets.h"
 #include "packet_handler.h"
 #include "serial.h"
-
-void Packet_print(PacketHeader* p) {
-  printf("{[id:%d s:%d seq:%d dest:%d src:%d checksum:%d] mode:%d speed:%d}\r",
-         p->id,
-         p->size,
-         p->seq,
-         p->dest_addr,
-         p->src_addr,
-         p->checksum,
-         ((MotorControlPacket*)p)->mode,
-         ((MotorControlPacket*)p)->speed);
-}
+#include "print_packets.h"
 
 static int recv_packets=0;
+static char buf[256];
 
 void receiveFn(PacketHeader* p, void* args) {
   ++recv_packets;
   memcpy((PacketHeader*)args, p, p->size);
-  Packet_print(p);
+  PrintPacket(p, buf);
+  printf("%s\r", buf);
   fflush(stdout);
 }
 

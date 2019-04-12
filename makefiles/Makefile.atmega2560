@@ -5,6 +5,7 @@ ARCH=arch/atmega2560
 CC=avr-gcc
 PREFIX=../..
 INCLUDE_DIRS=-I$(PREFIX)/src/arch/include -I$(PREFIX)/src/common -I$(PREFIX)/src/hermes_firmware -I$(PREFIX)/src/hermes_client
+OP_MODE?=
 
 CC_OPTS=-Wall --std=gnu99 -DF_CPU=16000000UL -O3 -funsigned-char -funsigned-bitfields  -fshort-enums -Wstrict-prototypes -mmcu=atmega2560 -D_ARDUINO_MEGA_2560 $(INCLUDE_DIRS)
 
@@ -47,9 +48,9 @@ all: $(BINS)
 %.o:	$(PREFIX)/src/common/%.c 
 	$(CC) $(CC_OPTS) -c  $<
 
-#common objects
+#firmware objects
 %.o:	$(PREFIX)/src/hermes_firmware/%.c 
-	$(CC) $(CC_OPTS) -c  $<
+	$(CC) $(CC_OPTS) -D$(OP_MODE) -c  $<
 
 #peripherials
 %.o:	$(PREFIX)/src/$(ARCH)/%.c 

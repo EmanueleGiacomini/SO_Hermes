@@ -27,7 +27,7 @@ typedef struct {
 typedef struct {
   PacketHeader h;
   int16_t encoder_ticks;
-  int16_t desidered_speed;
+  int16_t desired_speed;
   int16_t measured_speed;
 } MotorStatusPacket;
 #define ID_MOTOR_STATUS_PACKET 1

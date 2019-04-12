@@ -4,6 +4,7 @@
 #pragma once
 
 typedef enum {
+  BufferEmtpy=-4,
   ChecksumError=-3,
   WrongSize=-2,
   UnknownType=-1,

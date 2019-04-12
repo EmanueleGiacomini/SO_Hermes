@@ -9,18 +9,29 @@
 
 void HermesComm_receivePacketFn(PacketHeader*, void*);
 
+static uint8_t buffer_start[MAX_PACKET_TYPE];
+static uint8_t buffer_end[MAX_PACKET_TYPE];
+static uint16_t buffer_size[MAX_PACKET_TYPE];
+
+void* packet_buffers[MAX_PACKET_TYPE];
+
+static uint16_t received_packets_count=0;
+
 #define COPY 0x1
 #define TX_UART 0x2
 #define TX_NRF 0x4
 
 typedef struct {
-  PacketHeader* buffer;
+  void* buffer;
   uint8_t operations;
 }HandlePacketFn;
 
-#ifdef _CLIENT
 
+#ifdef _CLIENT
 MotorControlPacket motor_control_packet_buffer[PACKET_BUFFER_SIZE];
+packet_buffers={
+  motor_control_packet_buffer,
+};
 
 HandlePacketFn motor_control_args ={
   .buffer=motor_control_packet_buffer,
@@ -39,6 +50,10 @@ PacketOperation motor_control_packet_op={
 MotorControlPacket motor_control_packet_buffer[PACKET_BUFFER_SIZE];
 MotorStatusPacket motor_status_packet_buffer[PACKET_BUFFER_SIZE];
 
+packet_buffers={
+  motor_control_packet_buffer,
+  motor_status_packet_buffer,
+};
 HandlePacketFn motor_control_args ={
   .buffer=motor_control_packet_buffer,
   .operations=TX_NRF,
@@ -56,17 +71,15 @@ PacketOperation motor_control_packet_op={
   .on_receive_fn=HermesComm_receivePacketFn,
   .args=(void*)&motor_control_args
 };
-
+<
 PacketOperation motor_status_packet_op={
   .id=ID_MOTOR_STATUS_PACKET,
   .size=sizeof(MotorStatusPacket),
-  .on_receive_fn=0,
+  .on_receive_fn=HermesComm_receivePacketFn,
   .args=(void*)&motor_status_args,
 };
 
 #endif
-
-
 
 static uint8_t active_interfaces=0;
 
@@ -188,7 +201,12 @@ PacketStatus HermesComm_sendPacket(PacketHeader* h, uint8_t interface) {
 
 PacketStatus HermesComm_readPacket(PacketHeader* h) {
   // read from buffer
-  
+  uint8_t pid=h->id;
+  if(buffer_size[pid]==0)
+    return BufferEmtpy;
+  void* pbuf=packet_buffers[pid]+buffer_start[pid]*h->size;
+  memcpy((void*)h, pbuf, h->size);
+  return Success;
 }
 
 PacketStatus HermesComm_handle(void) {
@@ -231,5 +249,23 @@ PacketStatus HermesComm_handle(void) {
 
 void HermesComm_receivePacketFn(PacketHeader* p, void* _args) {
   // Do something, like incrementing received packets
+  received_packets_count++;
+  HandlePacketFn* args=(HandlePacketFn*)_args;
+  uint8_t ops=args->operations;
+  if(ops&TX_UART) {
+    HermesComm_sendPacket(p, O_UART);
+  }
+  if(ops&TX_NRF) {
+    HermesComm_sendPacket(p, O_NRF24L01);
+  }
+  if(ops&COPY) {
+    uint8_t pid=p->id;
+    if(buffer_size[pid]<PACKET_BUFFER_SIZE) { // buffer full
+      void* pbuf=(void*)args->buffer+p->size*buffer_end[pid];
+      memcpy(pbuf, (void*)p, p->size);
+      ++buffer_size[pid];
+      buffer_end[pid]=(buffer_end[pid]+1)%PACKET_BUFFER_SIZE;
+    }
+  }  
   return;
 }

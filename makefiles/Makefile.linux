@@ -7,7 +7,8 @@ COPTS+=-I$(PREFIX)/src/common -I$(PREFIX)/src/hermes_host
 COMM_OBJS=packet_handler.o\
 buffer.o
 
-HOST_OBJS=serial.o
+HOST_OBJS=serial.o\
+print_packets.o\
 
 BINS=packet_test.elf\
 
