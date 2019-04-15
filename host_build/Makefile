@@ -1,1 +1,1 @@
-/home/emanuele/university/sistemi_operativi/SO_Hermes/makefiles/Makefile.linux
+../makefiles/Makefile.linux

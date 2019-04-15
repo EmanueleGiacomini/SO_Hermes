@@ -1,5 +1,5 @@
 CC=gcc
-COPTS=-Wall -std=gnu11
+COPTS=-Wall -std=gnu11 -pthread
 
 PREFIX=..
 COPTS+=-I$(PREFIX)/src/common -I$(PREFIX)/src/hermes_host
@@ -9,8 +9,10 @@ buffer.o
 
 HOST_OBJS=serial.o\
 print_packets.o\
+joystick.o\
 
 BINS=packet_test.elf\
+hermes_host.elf\
 
 .phony: clean all
 

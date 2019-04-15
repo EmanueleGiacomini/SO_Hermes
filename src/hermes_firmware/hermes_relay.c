@@ -31,9 +31,6 @@ int main(int argc, char* argv[]) {
 
   while(1) {
     HermesComm_handle();
-    if(HermesComm_readPacket(&motor_control.h) == Success) {
-      HermesComm_sendPacket(&motor_control.h, O_UART);
-    }
   }
   
   return 0;
