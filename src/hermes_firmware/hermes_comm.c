@@ -48,6 +48,7 @@ PacketOperation motor_control_packet_op={
 #elif _RELAY
 MotorControlPacket motor_control_packet_buffer[PACKET_BUFFER_SIZE];
 MotorStatusPacket motor_status_packet_buffer[PACKET_BUFFER_SIZE];
+
 void* packet_buffers[MAX_PACKET_TYPE]={
   (void*)motor_control_packet_buffer,
   (void*)motor_status_packet_buffer,

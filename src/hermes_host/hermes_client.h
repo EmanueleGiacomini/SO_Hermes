@@ -4,10 +4,24 @@
  **/
 
 #pragma once
-#include "serial.h"
-#include <stdio.h>
+#include "hermes_packets.h"
+#include "packet_status.h"
 
-HermesClient_init(void) {
-  
-}
+
+typedef struct {
+  MotorControlPacket motor_control;
+  MotorStatusPacket motor_status;
+  SystemStatusPacket system_status;
+
+  PacketHandler ph;//packet handler
+  int serialfd=0;//uart fd
+}HermesClient;
+
+
+void HermesClient_init(HermesClient*, char* dev, int speed);
+PacketStatus HermesClient_sendPacket(HermesClient*, PacketHeader*);
+PacketStatus HermesClient_readPacket(HermesClient*, PacketHeader*);
+
+
+
 

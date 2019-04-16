@@ -9,7 +9,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-#define BUF_SIZE 256
+#define BUF_SIZE 255
 
 
 typedef struct Uart{

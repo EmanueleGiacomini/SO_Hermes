@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 uint16_t PrintHeader(PacketHeader* h, char* buf) {
-  return sprintf(buf, "[id:%d s:%d seq:%d dest:%d src:%d cs:%d] ",
+  return sprintf(buf, "[id:%d s:%d seq:%d dest:%d src:%d cs:%d]",
                  h->id,
                  h->size,
                  h->seq,
