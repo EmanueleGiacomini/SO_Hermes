@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
     HermesComm_handle();
     //motor_control.speed++;
     //HermesComm_sendPacket(&motor_control.h, O_UART);
-    //_delay_ms(200);
+    _delay_ms(10);
   }
   
   return 0;

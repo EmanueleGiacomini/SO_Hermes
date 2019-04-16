@@ -30,7 +30,11 @@ int main(int argc, char* argv[]) {
   HermesComm_init(O_NRF24L01|O_UART);
 
   while(1) {
-    HermesComm_handle();
+    //HermesComm_handle();
+    //motor_control.h.id = 1;
+    motor_control.speed++;
+    HermesComm_sendPacket(&motor_control.h, O_NRF24L01);
+    _delay_ms(100);
   }
   
   return 0;

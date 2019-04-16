@@ -4,6 +4,7 @@
 #include "packet_handler.h"
 
 
+
 int sendPacket(int fd, char* buf, int len) {
   //printf("Len is %d \n", len);
   uint8_t* test = (uint8_t*) buf;
@@ -136,18 +137,20 @@ int main(int argc, char* argv[]) {
   pthread_t threads[NUM_THREADS]; // Add more threads incrementing NUM_THREADS, Thread#0 -> Joystick
   int ret, i, fds[NUM_DEVICES];
 
+  /*
   int joy_fd = open("/dev/input/js1", O_RDONLY | O_NONBLOCK);  // Getting the file descriptor of the joystick on js1
   if(joy_fd < 0) {
     printf("Error %d opening %d.\n", errno, joy_fd);
     printf("Cannot find a joystick. Please connect one.\n");
     exit(1);
   } else fds[JOYSTICK] = joy_fd;
-  
+  */
   int mega_fd = setupSerial("/dev/ttyACM0", SPEED);
   if (mega_fd >= 0) fds[MEGA] = mega_fd;
   
   // If necessary insert here new file descriptors
-
+  
+  /*
   for (i=0; i<NUM_THREADS; ++i) {
     if(!i) ret = pthread_create(&threads[i], NULL, mainRoutine, (void*)fds); // Creating Thread#0 to manage a joystick
     if (ret != 0) {
@@ -155,7 +158,29 @@ int main(int argc, char* argv[]) {
       exit(1);
     }
   }
+  */
 
+  PacketHandler ph;
+  PacketHandler_init(&ph);
+  int num_pkt = -1;
+  while(1) {
+    MotorControlPacket mcp;
+    mcp.speed = num_pkt;
+    mcp.h.id = ID_MOTOR_CONTROL_PACKET;
+    mcp.h.size = sizeof(mcp);
+    
+    PacketHandler_sendPacket(&ph, &mcp.h);
+    uint8_t bytes = PacketHandler_txSize(&ph); 
+    for(int i=0; i<bytes; i++) {
+      uint8_t c = PacketHandler_writeByte(&ph);
+      write(fds[MEGA], &c, 1);
+    }
+    num_pkt++;
+    printf("Packet SENT %d\n", num_pkt);
+    
+    usleep(800000);
+    
+  }
   /*
   printf("I'm the host, doing some stuff\n");
   int x = 0;
@@ -165,6 +190,6 @@ int main(int argc, char* argv[]) {
   printf("Done!\n");
   */
 
-  pthread_exit(NULL);
+  //pthread_exit(NULL);
   return 0;
 }
