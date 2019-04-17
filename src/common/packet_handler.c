@@ -88,10 +88,9 @@ uint8_t PacketHandler_txSize(PacketHandler* h) {
 uint8_t PacketHandler_writeByte(PacketHandler* h) {
   if(h->tx_size==0)
     return 0;
-  uint8_t *tx_start=h->tx_start;
-  uint8_t c=*tx_start;
-  ++h->tx_start;
-  --h->tx_size;
+  uint8_t c=*(h->tx_start);
+  ++(h->tx_start);
+  --(h->tx_size);
   return c;
 }
 
@@ -169,5 +168,5 @@ PacketStatus _rxCs(PacketHandler* h, uint8_t c) {
   receiveFn_t recvFn=h->current_op->on_receive_fn;
   (*recvFn)(h->current_packet, h->current_op->args);
   h->receive_fn=_rxAA;
-  return Success;
+  return ChecksumSuccess;
 }

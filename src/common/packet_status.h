@@ -8,6 +8,7 @@ typedef enum {
   ChecksumError=-3,
   WrongSize=-2,
   UnknownType=-1,
-  Success=0
+  Success=0,
+  ChecksumSuccess=1,
 }PacketStatus;
 

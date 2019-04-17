@@ -51,6 +51,9 @@ int setupSerial(char* device, int speed) {
     printf("Error while setting up serial communication.\n");
     return -1;
   }
+
+  sleep(2);
+  tcflush(fd, TCIOFLUSH);
   
   return fd;
 }

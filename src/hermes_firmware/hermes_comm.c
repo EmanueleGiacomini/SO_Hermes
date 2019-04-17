@@ -5,6 +5,7 @@
 #include "hermes_comm.h"
 #include "hermes_globals.h"
 #include "uart.h"
+#include "digio.h"
 #include <string.h>
 
 #define PACKET_BUFFER_SIZE 8
@@ -129,6 +130,7 @@ void HermesComm_init(uint8_t interface) {
 }
 
 PacketStatus HermesComm_sendPacket(PacketHeader* h, uint8_t interface) {
+  cli();
   if(interface & O_UART) {
     PacketHandler* ph=&uart_handler;
     PacketHandler_sendPacket(ph, h);
@@ -139,9 +141,9 @@ PacketStatus HermesComm_sendPacket(PacketHeader* h, uint8_t interface) {
     for(i=0; i<bytes_to_write; ++i) {
       uint8_t c=PacketHandler_writeByte(ph);
       Uart_write(uart_1, c);
-    }
-    
+    }    
   }
+  
   if(interface & O_NRF24L01) {
     PacketHandler* ph=&nrf_handler;
     
@@ -195,7 +197,7 @@ PacketStatus HermesComm_sendPacket(PacketHeader* h, uint8_t interface) {
     sendpipe++;
     sendpipe%=6;
   }
-  
+  sei();
   return Success;
 }
 
@@ -212,12 +214,10 @@ PacketStatus HermesComm_readPacket(PacketHeader* h) {
 PacketStatus HermesComm_handle(void) {
   if(active_interfaces & O_UART) {
     PacketHandler* ph=&uart_handler;
-    
     while(Uart_available(uart_1)) {
       uint8_t c = Uart_read(uart_1);
       PacketHandler_readByte(ph, c);
     }
-  
   }
   if(active_interfaces & O_NRF24L01) {
     PacketHandler* ph=&nrf_handler;
@@ -248,9 +248,15 @@ PacketStatus HermesComm_handle(void) {
   return Success;
 }
 
+
+static uint8_t __debug_led_state=0;
+
 void HermesComm_receivePacketFn(PacketHeader* p, void* _args) {
   // Do something, like incrementing received packets
   system_status.rx_packets++;
+  __debug_led_state = (__debug_led_state+1)%2;
+  digio_setPin(13, __debug_led_state);
+  
   HandlePacketFn* args=(HandlePacketFn*)_args;
   uint8_t ops=args->operations;
   if(ops&TX_UART) {

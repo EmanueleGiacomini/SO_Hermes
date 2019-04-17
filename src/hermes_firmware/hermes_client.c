@@ -9,7 +9,6 @@
 #include <string.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <util/delay.h>
 
 #include "uart.h"
 #include "delay.h"
@@ -26,12 +25,24 @@
 
 int main(int argc, char* argv[]) {
   HermesComm_init(O_NRF24L01|O_UART);
+  digio_configurePin(13, Output);
+  digio_setPin(13, Low);
+
+  motor_control.h.seq=0;
+  motor_control.h.dest_addr=0xDE;
+  motor_control.h.src_addr=0xAD;
+  motor_control.mode=0xBE;
   
   while(1) {
-    HermesComm_handle();
-    //motor_control.speed++;
-    //HermesComm_sendPacket(&motor_control.h, O_UART);
-    _delay_ms(10);
+    //HermesComm_handle();
+    
+    if(HermesComm_readPacket((PacketHandler*)&motor_control)==Success) {
+      HermesComm_sendPacket((PacketHandler*)&motor_control, O_UART);
+    }
+    HermesComm_sendPacket((PacketHandler*)&motor_control, O_UART);
+    motor_control.h.seq+=1;
+    motor_control.speed+=1;
+    delay(300);
   }
   
   return 0;
