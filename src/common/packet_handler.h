@@ -14,10 +14,11 @@ typedef PacketStatus (*PacketHandlerFn)(struct PacketHandler*, uint8_t);
 typedef struct {
   PacketOperation packet_ops[MAX_PACKET_TYPE];
   // transmission
+  uint8_t tx_noble_buffer; // for the royal packets only
   uint8_t tx_buffer[PACKET_SIZE_MAX];
   uint8_t* tx_start;
   uint8_t* tx_end;
-  uint16_t tx_size;
+  uint8_t tx_size;
 
   // acquisition
   PacketOperation* current_op;

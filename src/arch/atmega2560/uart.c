@@ -11,7 +11,7 @@
 
 #include "digio.h"
 
-#define BUF_SIZE 255
+#define BUF_SIZE 256
 
 
 typedef struct Uart{
@@ -78,11 +78,12 @@ struct Uart* Uart_init(uint32_t baud) {
   uart.tx_start=0;
   uart.tx_end=0;
   uart.tx_size=0;
+  for(int i=0;i<BUF_SIZE;++i)
+    uart.tx_buffer[i]=0xCE;
 
   UCSR0A=0x00;
   UCSR0C=(1<<UCSZ01) | (1<<UCSZ00); // 8 bit data
   UCSR0B=(1<<RXEN0) | (1<<TXEN0) | (1<<RXCIE0);//enable rx and tx functions
-
   sei();
   return &uart;
 }
@@ -91,12 +92,12 @@ struct Uart* Uart_init(uint32_t baud) {
  * Insert c in the uart buffer, ready to be sent
  **/
 void Uart_write(struct Uart* u, uint8_t c) {
-  cli();
-  while(u->tx_size>=BUF_SIZE);
-  u->tx_buffer[u->tx_end++]=c;
+  while(u->tx_size>=BUF_SIZE) {}
+  u->tx_buffer[u->tx_end]=c;
+  u->tx_end++;
   u->tx_size++;
   UCSR0B |= (1<<UDRIE0); // Enable empty TX Interrupt
-  sei();
+  return;
 }
 
 /**
@@ -110,12 +111,10 @@ uint8_t Uart_available(struct Uart* u) {
  * reads the first character from the uart buffer
  **/
 uint8_t Uart_read(struct Uart* u) {
-  cli();
   while(u->rx_size==0);
   uint8_t c=u->rx_buffer[u->rx_start];
   u->rx_start++;
   u->rx_size--;
-  sei();
   return c;
 }
 

@@ -84,7 +84,7 @@ void receiverFn(void) {
     }
     
     ret=PacketHandler_readByte(ph, c);
-    if(ret) {
+    if(ret<0) {
       printf("ERROR %d while reading packet...\n", ret);
     }
     

@@ -134,14 +134,10 @@ PacketStatus HermesComm_sendPacket(PacketHeader* h, uint8_t interface) {
   if(interface & O_UART) {
     PacketHandler* ph=&uart_handler;
     PacketHandler_sendPacket(ph, h);
-    
-    uint8_t bytes_to_write= PacketHandler_txSize(ph);
-    int i;
-    
-    for(i=0; i<bytes_to_write; ++i) {
+    while(PacketHandler_txSize(ph)>0) {
       uint8_t c=PacketHandler_writeByte(ph);
       Uart_write(uart_1, c);
-    }    
+    } 
   }
   
   if(interface & O_NRF24L01) {
@@ -254,8 +250,6 @@ static uint8_t __debug_led_state=0;
 void HermesComm_receivePacketFn(PacketHeader* p, void* _args) {
   // Do something, like incrementing received packets
   system_status.rx_packets++;
-  __debug_led_state = (__debug_led_state+1)%2;
-  digio_setPin(13, __debug_led_state);
   
   HandlePacketFn* args=(HandlePacketFn*)_args;
   uint8_t ops=args->operations;

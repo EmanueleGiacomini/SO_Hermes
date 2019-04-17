@@ -24,7 +24,7 @@ void PacketHandler_addOperation(PacketHandler* h, PacketOperation* o) {
   h->packet_ops[o->id]=*o;
 }
 
-static uint8_t computeCS(PacketHeader* _p) {
+uint8_t computeCS(PacketHeader* _p) {
   uint8_t checksum=0;
   uint8_t* p=(uint8_t*)_p;
   for(int i=0;i<_p->size;++i) {
@@ -33,48 +33,32 @@ static uint8_t computeCS(PacketHeader* _p) {
   return checksum;
 }
 
+
+
 PacketStatus PacketHandler_sendPacket(PacketHandler* h, PacketHeader* _p) {
   uint8_t cs=computeCS(_p);
   _p->checksum=cs;
+  
   uint8_t*p=(uint8_t*)_p;
   uint8_t*p_end=p+_p->size;
 
   h->tx_end=h->tx_buffer; // reset buffer start/end
   h->tx_start=h->tx_buffer;
+  // insert 0xAA-0x55 before the packet
+  *h->tx_end=0xAA;
+  h->tx_end++;
+  *h->tx_end=0x55;
+  h->tx_end++;
 
-  uint8_t tx_size=2;
-  uint8_t* tx_end=h->tx_end;
-  *tx_end=0xAA;//insert 0xAA and 0x55 to initialize protocol
-  tx_end++;
-  *tx_end=0x55;
-  tx_end++;
-  while(p!=p_end) {
-    *tx_end=*p;
-    ++tx_size;
-    ++tx_end;
-    ++p;    
-  }
-  h->tx_size=tx_size;
-  return Success;
-  /**
-  uint8_t checksum=computeCS(_p);
-  _p->checksum=checksum;
-  uint8_t* p=(uint8_t*)_p;
-  uint8_t* p_end=p+_p->size;
-  uint8_t* tx_buf=(uint8_t*)h->tx_buffer;
-  uint16_t* tx_end=&h->tx_end;
-  uint16_t* tx_size=&h->tx_size;
-  buffer_insert(tx_buf, tx_end, PACKET_SIZE_MAX, 0xAA);
-  ++(*tx_size);
-  buffer_insert(tx_buf, tx_end, PACKET_SIZE_MAX, 0x55);
-  ++(*tx_size);
+  h->tx_size=2;
+  // copy the packet inside the tx_buffer
   while(p<p_end) {
-    buffer_insert(tx_buf, tx_end, PACKET_SIZE_MAX, *p);
-    ++(*tx_size);
+    *h->tx_end=*p;
+    ++h->tx_end;
+    ++h->tx_size;
     ++p;
   }
-  return Success;
-  **/
+  return Success;  
 }
 
 PacketStatus PacketHandler_readByte(PacketHandler* h, uint8_t c) {

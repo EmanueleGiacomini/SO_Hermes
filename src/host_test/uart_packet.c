@@ -13,6 +13,9 @@ char buf[256];
 
 void recvFn(PacketHeader* recvp, void* _args);
 
+static uint16_t __debug_succesful_rx_packets=0;
+static uint16_t __debug_error_rx_packets=0;
+
 MotorControlPacket motor_control={
   {
     .id=ID_MOTOR_CONTROL_PACKET,
@@ -36,6 +39,7 @@ PacketOperation motor_control_op={
 void recvFn(PacketHeader* recvp, void* _args) {
   PacketHeader* dest=(PacketHeader*)_args;
   memcpy(dest, recvp, dest->size);
+  __debug_succesful_rx_packets++;
   /**
   PrintPacket(dest, buf);
   printf("\33[2K");
@@ -68,12 +72,16 @@ int main(int argc, char** argv) {
         fflush(stdout);
         PacketStatus status=PacketHandler_readByte(&phandler, c);
         if(status<0) {
-          printf("error no: %d\n", status);
+          //printf("\nError at %d\n", __debug_succesful_rx_packets);
+          __debug_error_rx_packets++;
+          //printf("error no: %d\n", status);
         }
         packet_complete=(status==ChecksumSuccess);
       }              
     }
-    printf("recv packet\n");
+    printf("\033[K");
+    printf("succesful: %d\terror: %d\r", __debug_succesful_rx_packets, __debug_error_rx_packets);
+    usleep(10000);
     //============= debug
     /**
     printf("%02x", c);
