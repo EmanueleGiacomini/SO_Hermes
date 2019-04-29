@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
     HermesComm_sendPacket((PacketHandler*)&motor_control, O_UART);
     motor_control.h.seq+=1;
     motor_control.speed+=1;
-    delay(300);
+    delay(10);
   }
   
   return 0;

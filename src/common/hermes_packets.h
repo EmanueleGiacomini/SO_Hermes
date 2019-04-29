@@ -6,6 +6,12 @@
 #define MAX_PACKET_TYPE 16
 #define PACKET_SIZE_MAX 256
 
+typedef enum {
+  Direct=0,
+  Pid=1,
+  Disabled=2,
+}JointMode;
+
 #pragma pack(push, 1)
 
 typedef struct {
@@ -34,11 +40,25 @@ typedef struct {
 
 typedef struct {
   PacketHeader h;
+  uint8_t dir_pin;
+  uint8_t pwm_pin;
+  // PID Parameters
+  double kp;
+  double ki;
+  double kd;
+  double max_i;
+  double max_output;
+  double dt, idt;
+} MotorParamsPacket;
+#define ID_MOTOR_PARAMS_PACKET 2
+
+typedef struct {
+  PacketHeader h;
   uint16_t rx_packets;
   uint16_t rx_errors;
   uint16_t tx_packets;
   uint16_t idle_cycles;
 } SystemStatusPacket;
-#define ID_SYSTEM_STATUS_PACKET 2
+#define ID_SYSTEM_STATUS_PACKET 3
 
 #pragma pack(pop)
