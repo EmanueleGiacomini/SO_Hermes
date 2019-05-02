@@ -1,32 +1,34 @@
 #include "joystick.h"
 
 
-MotorControlPacket alterPacket(js_event * event) {
-
-  // TODO: Call a function to create a new MotorControlPacket
-  PacketHeader ph = {
-    .seq = 0,
-    .id = 0,
-    .size = 0,
-    .dest_addr = 0,
-    .checksum = 0
-  };
-
-  MotorControlPacket mcp = {
-    .h = ph,
-    .mode = 1,
-    .speed = 0
-  };
-
+int alterPacket(js_event* event, MotorControlPacket* mcp) {
   int16_t val = MAPPED_VALUE(event->value);
 
   if(event->type == JS_EVENT_BUTTON) {
     switch(event->number) {
+    case BTN_STRT:
+      mcp->speed = 0;
+      break;
     case BTN_X:
-      mcp.speed = 200;
+      mcp->speed = 50;
+      break;
+    case BTN_O:
+      mcp->speed = 100;
+      break;
+    case BTN_TR:
+      mcp->speed = 150;
+      break;
+    case BTN_SQ:
+      mcp->speed = 200;
+      break;
+    case UP:
+      mcp->speed += 10;
+      break;
+    case DOWN:
+      mcp->speed -= 10;
       break;
     default:
-      break;
+      return 1;
     }
 
   } else if(event->type == JS_EVENT_AXIS) {
@@ -36,26 +38,25 @@ MotorControlPacket alterPacket(js_event * event) {
     case AXIS_LY:
       break;
     case AXIS_L2:
-      mcp.speed = val;
+      mcp->speed = val;
       break;
     case AXIS_RX:
       break;
     case AXIS_RY:
       break;
     case AXIS_R2:
-      mcp.speed = val;
+      mcp->speed = val;
       break;
     default:
-      break;
+      return 1;
     }
-
 
   } else {
     printf("Event type not avaiable. \n");
-    return mcp;
+    return 1;
   }
 
-  return mcp;
+  return 0;
 }
 
 

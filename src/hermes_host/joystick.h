@@ -56,7 +56,7 @@ typedef struct {
 
 
 void printButton(uint8_t btn);  // Function that prints the value of the button
-MotorControlPacket alterPacket(js_event * event);  // Function that transform an event to a MotorControlPacket
+int alterPacket(js_event* event, MotorControlPacket* mcp); // Function that transform an event to a desired MotorControlPacket
                               
 
 

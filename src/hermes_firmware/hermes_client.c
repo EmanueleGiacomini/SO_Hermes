@@ -27,15 +27,13 @@ int main(int argc, char* argv[]) {
   HermesComm_init(O_NRF24L01|O_UART);
   digio_configurePin(13, Output);
   digio_setPin(13, Low);
-
-  motor_control.h.seq=0;
-  motor_control.h.dest_addr=0xDE;
-  motor_control.h.src_addr=0xAD;
-  motor_control.mode=0xBE;
   
   while(1) {
-    //HermesComm_handle();
     
+<<<<<<< HEAD
+    PacketStatus res = HermesComm_handle();
+    delay(10);
+=======
     if(HermesComm_readPacket((PacketHandler*)&motor_control)==Success) {
       HermesComm_sendPacket((PacketHandler*)&motor_control, O_UART);
     }
@@ -145,52 +143,9 @@ int main(void) {
 
   //init nrf24l01
   nrf24l01_init();
+>>>>>>> b02260c209a7563e3111fb553e0eb3d1bf79553f
 
-  //init interrupt
-  sei();
-
-
-  //uint8_t test[NRF24L01_PAYLOAD] = "ciao so io :-)!!";
-  uint8_t test[NRF24L01_PAYLOAD] = "negretto amico!\n";
-
-  //setup buffer
-  for(i=0; i<sizeof(bufferout); i++)
-    bufferout[i] = test[i];
-  for(i=0; i<sizeof(bufferin); i++)
-    bufferin[i] = 0;
-
-
-
-  //sending buffer addresses
-  uint8_t sendpipe = 0;
-  uint8_t addrtx0[NRF24L01_ADDRSIZE] = NRF24L01_ADDRP0;
-  uint8_t addrtx1[NRF24L01_ADDRSIZE] = NRF24L01_ADDRP1;
-  uint8_t addrtx2[NRF24L01_ADDRSIZE] = NRF24L01_ADDRP2;
-  uint8_t addrtx3[NRF24L01_ADDRSIZE] = NRF24L01_ADDRP3;
-  uint8_t addrtx4[NRF24L01_ADDRSIZE] = NRF24L01_ADDRP4;
-  uint8_t addrtx5[NRF24L01_ADDRSIZE] = NRF24L01_ADDRP5;
-
-  uint8_t cnt = 0;
-  //main loop
-  while(1) {
-
-    //rx
-    uint8_t pipe = 0;
-    if(nrf24l01_readready(&pipe)) { //if data is ready
-      cnt++;
-      //read buffer
-      nrf24l01_read(bufferin);
-    
-      for(i=0; i<sizeof(bufferin); i++) {
-        Uart_write(uart, bufferin[i]);
-      }
-      Uart_write(uart, ' ');
-      Uart_write(uart, cnt);
-      
-    }
-    _delay_ms(10);
   }
   
   return 0;
 }
-*/

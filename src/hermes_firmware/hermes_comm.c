@@ -37,6 +37,7 @@ void* packet_buffers[MAX_PACKET_TYPE]={
 HandlePacketFn motor_control_args ={
   .buffer=motor_control_packet_buffer,
   .operations=COPY|TX_UART,
+  //.operations=TX_UART,
 };
 
 PacketOperation motor_control_packet_op={
@@ -63,6 +64,7 @@ HandlePacketFn motor_control_args ={
 HandlePacketFn motor_status_args ={
   .buffer=motor_status_packet_buffer,
   .operations=TX_UART,
+  //.operations=TX_NRF,
 };
 
 

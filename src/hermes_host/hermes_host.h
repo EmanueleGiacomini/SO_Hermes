@@ -5,7 +5,11 @@
 #include <string.h>
 #include <termios.h>
 
+#include <unistd.h>
 #include <errno.h>
+
+#include "packet_handler.h"
+#include "hermes_packets.h"
 
 #define NUM_THREADS 1
 #define NUM_DEVICES 2
@@ -16,10 +20,7 @@
 
 #define SPEED 57600 // Baud rate
 
-
-int sendPacket(int fd, char* buf, int len); // Just a test
-
-
+void sendPacket(int fd, PacketHandler* ph, PacketHeader* h);
 
 
 
