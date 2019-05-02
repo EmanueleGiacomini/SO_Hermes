@@ -28,7 +28,7 @@ void HermesJoint_init(HermesJoint* j, MotorControlPacket* _control,
   return;
 }
 
-uint16_t clamp(uint16_t v, uint16_t max) {
+int16_t clamp(int16_t v, int16_t max) {
   if(v>max)
     return max;
   if(v<-max)
@@ -43,7 +43,7 @@ void HermesJoint_handle(HermesJoint* j) {
   j->status->encoder_ticks=Encoder_getValue(enc_idx);
   j->status->measured_speed=j->status->encoder_ticks-prev_ticks;
   
-  if(j->control->mode=Disabled)
+  if(j->control->mode==Disabled)
     return;
   if(j->control->mode==Pid) {
     // Pid Mode
@@ -58,8 +58,7 @@ void HermesJoint_handle(HermesJoint* j) {
     if(speed<0) {
       dir=1;
       speed=-speed;
-    }
-    
+    }    
     j->dir=dir;
     j->output=speed;
     digio_setPin(j->params->dir_a_pin, j->dir);

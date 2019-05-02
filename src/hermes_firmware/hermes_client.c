@@ -30,10 +30,9 @@ int main(int argc, char* argv[]) {
   
   while(1) {
     
-<<<<<<< HEAD
     PacketStatus res = HermesComm_handle();
     delay(10);
-=======
+    
     if(HermesComm_readPacket((PacketHandler*)&motor_control)==Success) {
       HermesComm_sendPacket((PacketHandler*)&motor_control, O_UART);
     }
