@@ -36,6 +36,7 @@ delay.o\
 uart.o\
 spi.o\
 encoder.o\
+pwm.o
 
 COMM_OBJS=packet_handler.o\
 buffer.o
@@ -43,6 +44,7 @@ buffer.o
 FIRMWARE_OBJS=hermes_nRF24L01.o\
 hermes_comm.o\
 hermes_globals.o\
+hermes_joint_internal.o\
 
 BINS= digio_test.elf\
 uart_test.elf\
