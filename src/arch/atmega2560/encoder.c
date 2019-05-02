@@ -13,13 +13,13 @@
  * Encoder mask for Register B (53-52-51-50-10-11-12-13)
  * We use the following configuration:
  *
- *                        /--J0--/ 
- * 0 - 0 - 0 - 0 - 0 - 0 - 1 - 1
- * 13  12  11  10  50  51  52  53
- * PB7 PB6 PB5 PB4 PB3 PB2 PB1 PB0
- * regvalue: 0x03
+ * /-J3-/  /-J2-/  /-J1-/  /-J0-/ 
+ * 1 - 1 - 0 - 0 - 0 - 0 - 0 - 0    <- Encoder mask
+ * 13  12  11  10  50  51  52  53   <- Arduino mapped pins
+ * PB7 PB6 PB5 PB4 PB3 PB2 PB1 PB0  <- ATmega2560 PORTB
+ * regvalue: 0xC0
  **/
-#define ENCODER_MASK 0x03
+#define ENCODER_MASK 0xC0
 uint8_t _encoder_prev;// Previous state of PINB
 // Current encoder value
 int16_t _encoder_current_value[NUM_ENCODERS];

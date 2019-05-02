@@ -9,8 +9,8 @@
 
 void PWM_init(void) {
   // Set TIMER0 and TIMER2 (8 bit timers)
-  TCCR0A=(1<<WGM01)|(1<<WGM02); // Enable FastPWM
-  TCCR0B=(1<<CS00); // Activate TIMER0 with no prescaler
+  TCCR0A=(1<<WGM00);
+  TCCR0B=(1<<CS00)|(1<<CS01);
   TCCR2A=TCCR0A;
   TCCR2B=TCCR0B;
 }

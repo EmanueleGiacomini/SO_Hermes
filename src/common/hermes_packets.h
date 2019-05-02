@@ -40,7 +40,8 @@ typedef struct {
 
 typedef struct {
   PacketHeader h;
-  uint8_t dir_pin;
+  uint8_t dir_a_pin;
+  uint8_t dir_b_pin;
   uint8_t pwm_pin;
   // PID Parameters
   double kp;

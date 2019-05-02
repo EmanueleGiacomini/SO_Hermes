@@ -47,9 +47,9 @@ Pin _pins[] = {
     .r_port=&PORTG,
     .r_pin=&PING,
     .pin=5,
-    .tccr=0,
-    .ocr=0,
-    .mask=0,
+    .tccr=&TCCR0A,
+    .ocr=&OCR0B,
+    .mask=(1<<COM0B1),
   },
   {// 5
     .r_ddr=&DDRE,
@@ -130,6 +130,6 @@ Pin _pins[] = {
     .pin=7,
     .tccr=&TCCR0A,
     .ocr=&OCR0A,
-    .mask=1<<COM0A1,
+    .mask=(1<<COM0A1),
   }
 };

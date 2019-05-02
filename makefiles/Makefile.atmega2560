@@ -36,7 +36,8 @@ delay.o\
 uart.o\
 spi.o\
 encoder.o\
-pwm.o
+pwm.o\
+timer.o\
 
 COMM_OBJS=packet_handler.o\
 buffer.o
@@ -45,12 +46,15 @@ FIRMWARE_OBJS=hermes_nRF24L01.o\
 hermes_comm.o\
 hermes_globals.o\
 hermes_joint_internal.o\
+hermes_joint.o\
 
 BINS= digio_test.elf\
 uart_test.elf\
 packet_test.elf\
 hermes_client.elf\
 hermes_relay.elf\
+pwm_test.elf\
+joint_test.elf\
 
 
 .phony: clean all cleareprom
