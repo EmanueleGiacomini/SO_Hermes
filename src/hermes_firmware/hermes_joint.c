@@ -10,7 +10,7 @@ HermesJoint joints[NUM_JOINTS];
 
 void HermesJoints_init(void) {
   Encoder_init();
-  HermesJoint_init(&joints[0], &motor_control, &motor_status, &motor_params, 2);
+  HermesJoint_init(&joints[0], &motor_control, &motor_status, &motor_params, 3);
   return;
 }
 

@@ -5,6 +5,7 @@
 #include "timer.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <string.h>
 
 #define NUM_TIMERS 8
 

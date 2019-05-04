@@ -9,44 +9,49 @@
 #include "hermes_comm.h"
 #include "hermes_globals.h"
 #include "hermes_joint.h"
+#include "encoder.h"
+#include "timer.h"
 #include "uart.h"
 
+volatile uint16_t icycles=0;// idle cycles
 
-static uint8_t led_state=0;
+volatile uint8_t comm_flag=0;
 
-void testFn(void) {
-  digio_setPin(13, led_state);
-  led_state=!led_state;
+void timerCommFn(void) {
+  comm_flag=1;
 }
+
+struct Uart* u1;
+
+void commFn(void) {
+  system_status.idle_cycles=icycles;
+  icycles=0;
+  HermesComm_handle();
+  HermesComm_readPacket((PacketHeader*)&motor_control);
+  HermesJoints_handle();
+  HermesComm_sendPacket((PacketHeader*)&motor_status, O_UART);
+  
+  comm_flag=0;
+}
+
+
 
 int main(int argc, char* argv[]) {
   Encoder_init();
+  PWM_init();
   HermesJoints_init();
   Timer_init();
+  HermesComm_init(O_UART);
 
-  struct Uart* u1=Uart_init(115200);
-  HermesComm_init(O_UART | O_NRF24L01);
+  u1=Uart_init(115200);
 
-  //digio_configurePin(13, Output);
-
-  //struct Timer* timer_test=Timer_create(100, &testFn, 0);
-  struct Timer* timer_comm=Timer_create(100, &HermesComm_handle, 0);
-  struct Timer* timer_joint=Timer_create(100, &HermesJoints_handle, 0);
+  struct Timer* timer_comm=Timer_create(10, &timerCommFn, 0);
   
-  //Timer_start(timer_test);
   Timer_start(timer_comm);
-  //Timer_start(timer_joint);
-
-  motor_control.mode=Direct;
   
   while(1) {
-    for(int i=0;i<255;++i) {
-      motor_control.speed=i;
-      HermesJoints_handle();
-      Uart_write(u1, motor_status.desired_speed);
-      //Uart_write(u1, motor_control.speed);
-      delay(100);
-    }
-    // stuff
+    ++icycles;
+    if(comm_flag)
+      commFn();
   }
 }

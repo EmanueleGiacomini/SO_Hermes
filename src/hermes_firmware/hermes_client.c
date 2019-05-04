@@ -30,13 +30,13 @@ int main(int argc, char* argv[]) {
   
   while(1) {
     
-    PacketStatus res = HermesComm_handle();
+    HermesComm_handle();
     delay(10);
     
-    if(HermesComm_readPacket((PacketHandler*)&motor_control)==Success) {
-      HermesComm_sendPacket((PacketHandler*)&motor_control, O_UART);
+    if(HermesComm_readPacket((PacketHeader*)&motor_control)==Success) {
+      HermesComm_sendPacket((PacketHeader*)&motor_control, O_UART);
     }
-    HermesComm_sendPacket((PacketHandler*)&motor_control, O_UART);
+    HermesComm_sendPacket((PacketHeader*)&motor_control, O_UART);
     motor_control.h.seq+=1;
     motor_control.speed+=1;
     delay(10);
@@ -148,3 +148,4 @@ int main(void) {
   
   return 0;
 }
+*/

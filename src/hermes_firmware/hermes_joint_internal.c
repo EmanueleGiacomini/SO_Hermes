@@ -4,6 +4,8 @@
 
 #include "hermes_joint_internal.h"
 #include "digio.h"
+#include "pwm.h"
+#include "encoder.h"
 
 void HermesJoint_init(HermesJoint* j, MotorControlPacket* _control,
                       MotorStatusPacket* _status,
@@ -36,6 +38,8 @@ int16_t clamp(int16_t v, int16_t max) {
   return v;
 }
 
+
+
 void HermesJoint_handle(HermesJoint* j) {
   // Encoder Section
   uint8_t enc_idx=j->enc_idx;
@@ -47,6 +51,28 @@ void HermesJoint_handle(HermesJoint* j) {
     return;
   if(j->control->mode==Pid) {
     // Pid Mode
+    static int16_t perror;
+    j->status->desired_speed=j->control->speed;
+    int16_t error=j->status->desired_speed-j->status->measured_speed;
+    int16_t output=0;
+
+    j->params->sum_i+=j->params->ki*error*j->params->dt;
+    j->params->sum_i=clamp(j->params->sum_i, j->params->max_i);
+    double derror=(error-perror)*j->params->idt;
+    output=j->params->kp*error+j->params->sum_i+derror*j->params->kd;
+    output=clamp(output, j->params->max_output);
+    int16_t speed=output;
+    uint8_t dir=0;
+    if(speed<0) {
+      speed=-speed;
+      dir=1;
+    }
+    j->dir=dir;
+    j->output=speed;
+    digio_setPin(j->params->dir_a_pin, j->dir);
+    digio_setPin(j->params->dir_b_pin, !j->dir);
+    PWM_setOutput(j->params->pwm_pin, j->output);
+    perror=error;
     return;
   }
   if(j->control->mode==Direct) {

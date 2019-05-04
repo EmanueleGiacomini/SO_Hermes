@@ -14,6 +14,7 @@ joystick.o\
 BINS=packet_test.elf\
 uart_packet.elf\
 hermes_host.elf\
+joint_test.elf\
 
 .phony: clean all
 

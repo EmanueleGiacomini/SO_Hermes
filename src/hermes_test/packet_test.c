@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
   PacketHandler_init(&packet_handler);
   while(1) {
     motor_control_packet.speed+=10;
-    PacketHandler_sendPacket(&packet_handler, (PacketHandler*)&motor_control_packet);
+    PacketHandler_sendPacket(&packet_handler, (PacketHeader*)&motor_control_packet);
     flushBuffer(u1, &packet_handler);
     delay(500);
   }

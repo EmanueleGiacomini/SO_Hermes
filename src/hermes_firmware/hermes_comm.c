@@ -16,8 +16,6 @@ static uint8_t buffer_start[MAX_PACKET_TYPE];
 static uint8_t buffer_end[MAX_PACKET_TYPE];
 static uint16_t buffer_size[MAX_PACKET_TYPE];
 
-static uint16_t received_packets_count=0;
-
 #define COPY 0x1
 #define TX_UART 0x2
 #define TX_NRF 0x4
@@ -36,7 +34,7 @@ void* packet_buffers[MAX_PACKET_TYPE]={
 
 HandlePacketFn motor_control_args ={
   .buffer=motor_control_packet_buffer,
-  .operations=COPY|TX_UART,
+  .operations=COPY,
   //.operations=TX_UART,
 };
 
@@ -133,6 +131,7 @@ void HermesComm_init(uint8_t interface) {
 
 PacketStatus HermesComm_sendPacket(PacketHeader* h, uint8_t interface) {
   cli();
+  ++system_status.tx_packets; // statistics
   if(interface & O_UART) {
     PacketHandler* ph=&uart_handler;
     PacketHandler_sendPacket(ph, h);
@@ -205,6 +204,8 @@ PacketStatus HermesComm_readPacket(PacketHeader* h) {
   if(buffer_size[pid]==0)
     return BufferEmtpy;
   void* pbuf=packet_buffers[pid]+buffer_start[pid]*h->size;
+  buffer_start[pid]=(buffer_start[pid]+1)%PACKET_BUFFER_SIZE;
+  --buffer_size[pid];
   memcpy((void*)h, pbuf, h->size);
   return Success;
 }
@@ -214,7 +215,9 @@ PacketStatus HermesComm_handle(void) {
     PacketHandler* ph=&uart_handler;
     while(Uart_available(uart_1)) {
       uint8_t c = Uart_read(uart_1);
-      PacketHandler_readByte(ph, c);
+      if(PacketHandler_readByte(ph, c)<0) {
+        ++system_status.rx_errors;// statistics
+      }
     }
   }
   if(active_interfaces & O_NRF24L01) {
@@ -237,7 +240,9 @@ PacketStatus HermesComm_handle(void) {
           idx = 0;
           break;
         }
-        PacketHandler_readByte(ph, rx_buf[i]);
+        if(PacketHandler_readByte(ph, rx_buf[i])<0) {
+          ++system_status.rx_errors;// statistics
+        }
         ++idx;
       }
     }
@@ -246,12 +251,8 @@ PacketStatus HermesComm_handle(void) {
   return Success;
 }
 
-
-static uint8_t __debug_led_state=0;
-
 void HermesComm_receivePacketFn(PacketHeader* p, void* _args) {
-  // Do something, like incrementing received packets
-  system_status.rx_packets++;
+  system_status.rx_packets++;// statistics
   
   HandlePacketFn* args=(HandlePacketFn*)_args;
   uint8_t ops=args->operations;
@@ -263,7 +264,7 @@ void HermesComm_receivePacketFn(PacketHeader* p, void* _args) {
   }
   if(ops&COPY) {
     uint8_t pid=p->id;
-    if(buffer_size[pid]<PACKET_BUFFER_SIZE) { // buffer full
+    if(buffer_size[pid]<PACKET_BUFFER_SIZE) { // buffer not full
       void* pbuf=(void*)args->buffer+p->size*buffer_end[pid];
       memcpy(pbuf, (void*)p, p->size);
       ++buffer_size[pid];

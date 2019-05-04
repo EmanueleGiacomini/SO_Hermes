@@ -6,7 +6,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-#define NUM_ENCODERS 1
+#define NUM_ENCODERS 4
 
 
 /**
@@ -99,8 +99,8 @@ ISR(PCINT0_vect) {
     // build the following data:
     // first 2 bits of prev_value | first 2 bits of c_value
     uint8_t table_idx=(c_value&0x03)|(prev_value&0x03)<<2;
-    curr_enc++;
     *curr_enc+=ttable[table_idx];
+    ++curr_enc;
     c_value>>=2;
     prev_value>>=2;
     

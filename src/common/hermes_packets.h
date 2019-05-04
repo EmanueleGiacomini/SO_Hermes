@@ -26,7 +26,7 @@ typedef struct {
 typedef struct {
   PacketHeader h;
   uint8_t mode;
-  uint8_t speed;
+  int16_t speed;
 } MotorControlPacket;
 #define ID_MOTOR_CONTROL_PACKET 0
 
@@ -48,7 +48,8 @@ typedef struct {
   double ki;
   double kd;
   double max_i;
-  double max_output;
+  double sum_i;
+  int16_t max_output;
   double dt, idt;
 } MotorParamsPacket;
 #define ID_MOTOR_PARAMS_PACKET 2

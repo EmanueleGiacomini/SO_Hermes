@@ -32,6 +32,16 @@ uint16_t MotorStatusPacket_print(PacketHeader* h, char* buf) {
                  p->measured_speed);
 }
 
+uint16_t SystemStatusPacket_print(PacketHeader* h, char* buf) {
+  SystemStatusPacket* p = h;
+  uint16_t h_chars=PrintHeader(h, buf); 
+  return sprintf(buf+h_chars, "[rxp:%d rxe:%d txp:%d idle:%d]",
+                 p->rx_packets,
+                 p->rx_errors,
+                 p->tx_packets,
+                 p->idle_cycles);
+}
+
 typedef uint16_t (*PrintPacketFn)(PacketHeader*, char*);
 
 typedef struct {
@@ -44,6 +54,12 @@ static PrintPacketOps print_packet_ops[MAX_PACKET_TYPE] = {
   },
   {//1
     .print_fn=MotorStatusPacket_print,
+  },
+  {//2
+    .print_fn=0,
+  },
+  {//3
+    .print_fn=SystemStatusPacket_print,
   },
 };
 
