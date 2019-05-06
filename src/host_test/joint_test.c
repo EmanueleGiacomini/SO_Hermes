@@ -101,19 +101,19 @@ pthread_t read_thread;
 
 void threadFn(void) {
   printf("[WThread] starting...\n");
-  motor_control.mode=1;
+  motor_control.mode=0;
   motor_control.speed=0;
   while(!wthread_term_flag) {
     ++motor_control.speed;
-    if(motor_control.speed>70) {
-      motor_control.speed=-70;
+    if(motor_control.speed>255) {
+      motor_control.speed=0;
     }
     PacketHandler_sendPacket(ph, (PacketHeader*)&motor_control);
     while(PacketHandler_txSize(ph)) {
       uint8_t c=PacketHandler_writeByte(ph);
       write(serialfd, &c, 1);
     }
-    usleep(50000);
+    usleep(100000);
   }
   printf("[WThread] Exiting...\n");
   pthread_exit(NULL);

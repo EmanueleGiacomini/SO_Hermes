@@ -17,7 +17,7 @@ typedef enum {
 typedef struct {
   uint8_t id;
   uint8_t size;
-  uint8_t seq;
+  uint16_t seq;
   uint8_t dest_addr;
   uint8_t src_addr;
   uint8_t checksum;

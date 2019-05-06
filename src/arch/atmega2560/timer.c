@@ -93,9 +93,10 @@ void Timer_stop(struct Timer* t) {
 
 volatile uint16_t elapsed_time=0;
 
+
 ISR(TIMER5_COMPA_vect) {
   elapsed_time++;
-  for(int i=0;i<1;++i) {
+  for(int i=0;i<NUM_TIMERS;++i) {
     if(mask_read(&timers_mask, i)==1) {
       // check if current struct can be executed
       if(timers[i].stop_flag==0 && (elapsed_time % timers[i].duration_ms)==0) {

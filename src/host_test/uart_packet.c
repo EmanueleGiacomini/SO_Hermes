@@ -36,16 +36,50 @@ PacketOperation motor_control_op={
   .args=(void*)&motor_control
 };
 
+MotorStatusPacket motor_status={
+  {
+    .id=ID_MOTOR_STATUS_PACKET,
+    .size=sizeof(motor_status),
+    .seq=0,
+    .dest_addr=0,
+    .src_addr=0,
+    .checksum=0,
+  },
+};
+
+PacketOperation motor_status_op={
+  .id=ID_MOTOR_STATUS_PACKET,
+  .size=sizeof(motor_status),
+  .on_receive_fn=recvFn,
+  .args=(void*)&motor_status
+};
+
+SystemStatusPacket system_status={
+  {
+    .id=ID_SYSTEM_STATUS_PACKET,
+    .size=sizeof(system_status),
+    .seq=0,
+    .dest_addr=0,
+    .src_addr=0,
+    .checksum=0,
+  },
+};
+
+PacketOperation system_status_op={
+  .id=ID_SYSTEM_STATUS_PACKET,
+  .size=sizeof(system_status),
+  .on_receive_fn=recvFn,
+  .args=(void*)&system_status
+};
+
 void recvFn(PacketHeader* recvp, void* _args) {
   PacketHeader* dest=(PacketHeader*)_args;
   memcpy(dest, recvp, dest->size);
   __debug_succesful_rx_packets++;
-  /**
   PrintPacket(dest, buf);
   printf("\33[2K");
   printf("%s\r", buf);
   fflush(stdout);
-  **/
 }
 
 PacketHandler phandler;
@@ -53,15 +87,17 @@ PacketHandler phandler;
 uint8_t __debug_ibctr=0;// incoming byte counter
 uint8_t __debug_ipctr=0;// incoming packet counter
 
-int main(int argc, char** argv) {
-  int serialfd=setupSerial("/dev/ttyACM0", 57600);
+int main(int argc, char* argv[]) {
+  int serialfd=setupSerial(argv[1], 57600);
   if(serialfd<0) {
-    printf("Error while setting serial...\n");
+    printf("Error while setting serial... port:%s\n", argv[1]);
     return -1;
   }
 
   PacketHandler_init(&phandler);
   PacketHandler_addOperation(&phandler, &motor_control_op);
+  PacketHandler_addOperation(&phandler, &motor_status_op);
+  PacketHandler_addOperation(&phandler, &system_status_op);
   
   while(1) {
     uint8_t c;
@@ -78,27 +114,7 @@ int main(int argc, char** argv) {
         }
         packet_complete=(status==ChecksumSuccess);
       }              
-    }
-    printf("\033[K");
-    printf("succesful: %d\terror: %d\r", __debug_succesful_rx_packets, __debug_error_rx_packets);
-    usleep(10000);
-    //============= debug
-    /**
-    printf("%02x", c);
-    __debug_ibctr++;
-    if(__debug_ibctr%(sizeof(motor_control)+2)==0) {
-      __debug_ipctr++;
-      printf("\t%d\n", __debug_ipctr);
-      if(__debug_ipctr%30==0) {
-        //printf("\033[30A");
-        printf("\n");
-        return 0;
-      }
-      fflush(stdout);
-    }
-    **/
-    //============= debug
-    
+    }    
   }
                   
   return 0;

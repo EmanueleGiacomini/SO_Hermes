@@ -16,6 +16,8 @@ static uint8_t buffer_start[MAX_PACKET_TYPE];
 static uint8_t buffer_end[MAX_PACKET_TYPE];
 static uint16_t buffer_size[MAX_PACKET_TYPE];
 
+static uint16_t global_seq=0;
+
 #define COPY 0x1
 #define TX_UART 0x2
 #define TX_NRF 0x4
@@ -100,6 +102,7 @@ static uint8_t addrtx5[NRF24L01_ADDRSIZE] = NRF24L01_ADDRP5;
 
 
 void HermesComm_init(uint8_t interface) {
+  digio_configurePin(2, Output);
   active_interfaces=interface;
   if(interface & O_UART) {
     PacketHandler_init(&uart_handler);
@@ -132,6 +135,7 @@ void HermesComm_init(uint8_t interface) {
 PacketStatus HermesComm_sendPacket(PacketHeader* h, uint8_t interface) {
   cli();
   ++system_status.tx_packets; // statistics
+  h->seq=global_seq;
   if(interface & O_UART) {
     PacketHandler* ph=&uart_handler;
     PacketHandler_sendPacket(ph, h);
@@ -142,6 +146,7 @@ PacketStatus HermesComm_sendPacket(PacketHeader* h, uint8_t interface) {
   }
   
   if(interface & O_NRF24L01) {
+    digio_setPin(2, 1);
     PacketHandler* ph=&nrf_handler;
     
     // Setting the right pipe address
@@ -193,8 +198,10 @@ PacketStatus HermesComm_sendPacket(PacketHeader* h, uint8_t interface) {
     // Using all the pipes to transmit
     sendpipe++;
     sendpipe%=6;
+    digio_setPin(2, 0);
   }
   sei();
+  global_seq++;
   return Success;
 }
 
@@ -251,8 +258,12 @@ PacketStatus HermesComm_handle(void) {
   return Success;
 }
 
+volatile uint8_t __debug_led_state=0;
+
 void HermesComm_receivePacketFn(PacketHeader* p, void* _args) {
   system_status.rx_packets++;// statistics
+  digio_setPin(2, __debug_led_state);
+  __debug_led_state=!__debug_led_state;  
   
   HandlePacketFn* args=(HandlePacketFn*)_args;
   uint8_t ops=args->operations;

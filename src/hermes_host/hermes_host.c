@@ -21,17 +21,20 @@ void* mainRoutine(void *arg) {
   printf("Welcome to HERMES!\n");
   printf("-------------------------------\n");
 
-  MotorControlPacket mcp;
-  
-  PacketHeader ph = {
-    .seq = 0,
-    .id = ID_MOTOR_CONTROL_PACKET,
-    .size = sizeof(mcp),
-    .dest_addr = 0,
-    .checksum = 0
+  MotorControlPacket mcp = {
+    {
+      .id=ID_MOTOR_CONTROL_PACKET,
+      .size=sizeof(mcp),
+      .seq=0,
+      .dest_addr=0,
+      .src_addr=0,
+      .checksum=0,
+    },
+    .mode=0,
+    .speed=0,
   };
-  
-  mcp.h = ph;
+
+  PacketHandler ph;
   PacketHandler_init(&ph);
    
   while(1) {
@@ -43,7 +46,7 @@ void* mainRoutine(void *arg) {
           break;
         }
         
-        if(!alterPacket(&e, &mcp)) sendPacket(fds[MEGA], &ph, &mcp.h);
+        if(!alterPacket(&e, &mcp)) sendPacket(fds[MEGA], &ph, (PacketHeader*)&mcp);
         
         /* test print
         printf("time -> %d \n", e.time);
@@ -104,7 +107,7 @@ int main(int argc, char* argv[]) {
   pthread_t threads[NUM_THREADS]; // Add more threads incrementing NUM_THREADS, Thread#0 -> Joystick
   int ret, i, fds[NUM_DEVICES];
   
-  int joy_fd = open("/dev/input/js1", O_RDONLY | O_NONBLOCK);  // Getting the file descriptor of the joystick on js1
+  int joy_fd = open("/dev/input/js0", O_RDONLY | O_NONBLOCK);  // Getting the file descriptor of the joystick on js1
   if(joy_fd < 0) {
     printf("Error %d opening %d.\n", errno, joy_fd);
     printf("Cannot find a joystick. Please connect one.\n");
@@ -123,7 +126,6 @@ int main(int argc, char* argv[]) {
       exit(1);
     }
   }
-  
-  pthread_exit(NULL);
+  pthread_join(threads[0], NULL);
   return 0;
 }
