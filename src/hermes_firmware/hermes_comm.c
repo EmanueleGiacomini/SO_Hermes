@@ -248,7 +248,7 @@ PacketStatus HermesComm_handle(void) {
           break;
         }
         if(PacketHandler_readByte(ph, rx_buf[i])<0) {
-          ++system_status.rx_errors;// statistics
+          //++system_status.rx_errors;// statistics
         }
         ++idx;
       }
