@@ -124,11 +124,13 @@ void* mainRoutine(void *arg) {
       break;
     }
     
+    /*
     if(errno != EAGAIN) {
       printf("An error occured while reading the event.\n");
       printf("Error code: %d\n", errno);
       pthread_exit(NULL);
     }
+    */
     
   }
 
