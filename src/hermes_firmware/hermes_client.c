@@ -41,6 +41,7 @@ void commFn(void) {
   icycles=0;
   HermesComm_handle();
   HermesComm_readPacket((PacketHeader*)&motor_control);
+  HermesComm_readPacket((PacketHeader*)&motor_params);
   HermesJoints_handle();
   comm_flag=0;
 }
@@ -66,7 +67,7 @@ int main(int argc, char* argv[]) {
       commFn();
     if(status_flag) {
       HermesComm_sendPacket((PacketHeader*)&motor_status, O_NRF24L01);
-      HermesComm_sendPacket((PacketHeader*)&system_status, O_UART);
+      //      HermesComm_sendPacket((PacketHeader*)&system_status, O_UART);
       status_flag=0;
     }
   }

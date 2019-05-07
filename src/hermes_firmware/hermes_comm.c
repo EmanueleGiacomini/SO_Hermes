@@ -30,14 +30,22 @@ typedef struct {
 
 #ifdef _CLIENT
 MotorControlPacket motor_control_packet_buffer[PACKET_BUFFER_SIZE];
+MotorParamsPacket motor_params_packet_buffer[PACKET_BUFFER_SIZE];
 void* packet_buffers[MAX_PACKET_TYPE]={
   (void*)motor_control_packet_buffer,
+  0,
+  (void*)motor_params_packet_buffer,
 };
 
 HandlePacketFn motor_control_args ={
   .buffer=motor_control_packet_buffer,
   .operations=COPY,
   //.operations=TX_UART,
+};
+
+HandlePacketFn motor_params_args ={
+  .buffer=motor_params_packet_buffer,
+  .operations=COPY,
 };
 
 PacketOperation motor_control_packet_op={
@@ -47,24 +55,30 @@ PacketOperation motor_control_packet_op={
   .args=(void*)&motor_control_args
 };
 
-#elif _RELAY
-MotorControlPacket motor_control_packet_buffer[PACKET_BUFFER_SIZE];
-MotorStatusPacket motor_status_packet_buffer[PACKET_BUFFER_SIZE];
-
-void* packet_buffers[MAX_PACKET_TYPE]={
-  (void*)motor_control_packet_buffer,
-  (void*)motor_status_packet_buffer,
+PacketOperation motor_params_packet_op={
+  .id=ID_MOTOR_PARAMS_PACKET,
+  .size=sizeof(MotorParamsPacket),
+  .on_receive_fn=HermesComm_receivePacketFn,
+  .args=(void*)&motor_params_args,
 };
 
+#elif _RELAY
+
+void* packet_buffers[MAX_PACKET_TYPE]={};
+
 HandlePacketFn motor_control_args ={
-  .buffer=motor_control_packet_buffer,
+  .buffer=0,
   .operations=TX_NRF,
 };
 
 HandlePacketFn motor_status_args ={
-  .buffer=motor_status_packet_buffer,
+  .buffer=0,
   .operations=TX_UART,
-  //.operations=TX_NRF,
+};
+
+HandlePacketFn motor_params_args ={
+  .buffer=0,
+  .operations=TX_NRF,
 };
 
 
@@ -81,6 +95,14 @@ PacketOperation motor_status_packet_op={
   .on_receive_fn=HermesComm_receivePacketFn,
   .args=(void*)&motor_status_args,
 };
+
+PacketOperation motor_params_packet_op={
+  .id=ID_MOTOR_PARAMS_PACKET,
+  .size=sizeof(MotorParamsPacket),
+  .on_receive_fn=HermesComm_receivePacketFn,
+  .args=(void*)&motor_params_args,
+};
+
 
 #endif
 
