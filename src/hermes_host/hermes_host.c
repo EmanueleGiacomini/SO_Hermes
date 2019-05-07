@@ -1,9 +1,11 @@
 #include "hermes_host.h"
 #include "serial.h"
 #include "joystick.h"
+#include "gui.h"
 
 char buf[256];
 uint8_t end_flag = 0;
+uint8_t send_sem = 1;
 PacketHandler ph;
 
 void recvFn(PacketHeader* recvp, void* _args) {
@@ -36,15 +38,6 @@ PacketOperation motor_status_op={
   .args=(void*)&motor_status
 };
 
-
-void sendPacket(int fd, PacketHandler* ph, PacketHeader* h) {
-  PacketHandler_sendPacket(ph, h);
-  uint8_t bytes = PacketHandler_txSize(ph); 
-  for(int i=0; i<bytes; i++) {
-    uint8_t c = PacketHandler_writeByte(ph);
-    write(fd, &c, 1);
-  }
-}
 
 void* statusRoutine(void *arg) {
   
@@ -94,7 +87,7 @@ void* mainRoutine(void *arg) {
           break;
         }
         
-        if(!alterPacket(&e, &mcp)) sendPacket(fds[MEGA], &ph, (PacketHeader*)&mcp);
+        if(!alterPacket(&e, &mcp)) sendPacket(fds[MEGA], &ph, (PacketHeader*)&mcp, &send_sem);
         
         /* test print
         printf("time -> %d \n", e.time);
@@ -161,7 +154,7 @@ int main(int argc, char* argv[]) {
   pthread_t threads[NUM_THREADS]; // Add more threads incrementing NUM_THREADS, Thread#0 -> Joystick
   int ret, i, fds[NUM_DEVICES];
   
-  if(argc < 3) {
+  if(argc < 4) {
     printf("ERROR: Method usage: ./hermes_host.elf <serial-dev> <js-dev> <gui-enable>\n");
     exit(1);
   }
@@ -178,7 +171,7 @@ int main(int argc, char* argv[]) {
   int mega_fd = setupSerial(argv[1], SPEED);
   if (mega_fd >= 0) fds[MEGA] = mega_fd;
   
-  // If necessary insert here new file descriptors
+  // If necessary insert here new file descriptors //
 
   PacketHandler_init(&ph);
   PacketHandler_addOperation(&ph, &motor_status_op);
@@ -193,7 +186,8 @@ int main(int argc, char* argv[]) {
     }
   }
   
-  
+  // Check GUI enabled
+  if(atoi(argv[3]) == 1) initGUI(fds[MEGA], &end_flag, &send_sem, &ph, &motor_status);
   
   //pthread_exit(NULL);
   for(i=0; i<NUM_THREADS; ++i) pthread_join(threads[i], NULL);

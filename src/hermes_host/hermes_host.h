@@ -20,7 +20,6 @@
 
 #define SPEED 57600 // Baud rate
 
-void sendPacket(int fd, PacketHandler* ph, PacketHeader* h);
 void recvFn(PacketHeader* recvp, void* _args);
 
 

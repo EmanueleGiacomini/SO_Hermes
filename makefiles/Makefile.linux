@@ -1,5 +1,6 @@
 CC=gcc
-COPTS=-Wall -std=gnu11 -pthread
+COPTS=-Wall -std=gnu11 -pthread `pkg-config --libs --cflags gtk+-3.0`
+LDFLAGS =`pkg-config --libs --cflags gtk+-3.0`
 
 PREFIX=..
 COPTS+=-I$(PREFIX)/src/common -I$(PREFIX)/src/hermes_host
@@ -10,6 +11,7 @@ buffer.o
 HOST_OBJS=serial.o\
 print_packets.o\
 joystick.o\
+gui.o\
 
 BINS=packet_test.elf\
 uart_packet.elf\
@@ -23,17 +25,17 @@ all:$(BINS)
 
 #common objects
 %.o:	$(PREFIX)/src/common/%.c 
-	$(CC) $(COPTS) -c  $<
+	$(CC) $(COPTS) -c  $< $(LDFLAGS)
 
 %.o:	$(PREFIX)/src/hermes_host/%.c 
-	$(CC) $(COPTS) -c  $<
+	$(CC) $(COPTS) -c  $< $(LDFLAGS)
 
 #peripherial test
 %.o:	$(PREFIX)/src/host_test/%.c 
-	$(CC) $(COPTS) -c  $<
+	$(CC) $(COPTS) -c  $< $(LDFLAGS)
 
 %.elf:	%.o $(COMM_OBJS) $(HOST_OBJS)
-	$(CC) $(COPTS) -o $@ $^ 
+	$(CC) $(COPTS) -o $@ $^ $(LDFLAGS)
 
 clean:
 	rm -rf $(OBJS) $(BINS) *.hex *~ *.o
