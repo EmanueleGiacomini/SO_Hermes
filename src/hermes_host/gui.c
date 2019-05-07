@@ -52,8 +52,9 @@ GtkWidget *dt;
 
 void* routine(void *arg) {
   char val[10];
-
-  while(!*_end_flag) {
+  
+  while(!(*_end_flag)) {
+    
     sprintf(val, "%d", _motor_status->encoder_ticks);
     gtk_label_set_text(GTK_LABEL (et), val);
     
@@ -62,10 +63,9 @@ void* routine(void *arg) {
     
     sprintf(val, "%d", _motor_status->measured_speed);
     gtk_label_set_text(GTK_LABEL (ms), val);
-    
-    usleep(1000 * 10);
+    usleep(1000 * 500);    
   }
-
+  printf("[GUI]Closing the GUI...");
   gtk_main_quit();
   pthread_exit(NULL);
 }

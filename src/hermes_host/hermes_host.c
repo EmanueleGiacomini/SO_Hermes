@@ -83,6 +83,8 @@ void* mainRoutine(void *arg) {
         //printf("fuck\n");
         
         if(e.number == BTN_PS) {
+          end_flag = 1;
+          printf("[MAIN] end_flag=1\n");
           endit = 1;
           break;
         }
@@ -121,6 +123,7 @@ void* mainRoutine(void *arg) {
     
     if(endit) {
       end_flag = 1;
+      printf("[MAIN] end_flag=1\n");
       break;
     }
     
