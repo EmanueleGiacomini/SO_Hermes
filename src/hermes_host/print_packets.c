@@ -32,6 +32,17 @@ uint16_t MotorStatusPacket_print(PacketHeader* h, char* buf) {
                  p->measured_speed);
 }
 
+uint16_t MotorParamsPacket_print(PacketHeader* h, char* buf) {
+  MotorParamsPacket* p = h;
+  uint16_t h_chars=PrintHeader(h, buf); 
+  return sprintf(buf+h_chars, "[kp:%f ki:%f kd:%f dt:%f idt:%f]",
+                 p->kp,
+                 p->ki,
+                 p->kd,
+                 p->dt,
+                 p->idt);
+}
+
 uint16_t SystemStatusPacket_print(PacketHeader* h, char* buf) {
   SystemStatusPacket* p = h;
   uint16_t h_chars=PrintHeader(h, buf); 
@@ -56,7 +67,7 @@ static PrintPacketOps print_packet_ops[MAX_PACKET_TYPE] = {
     .print_fn=MotorStatusPacket_print,
   },
   {//2
-    .print_fn=0,
+    .print_fn=MotorParamsPacket_print,
   },
   {//3
     .print_fn=SystemStatusPacket_print,
