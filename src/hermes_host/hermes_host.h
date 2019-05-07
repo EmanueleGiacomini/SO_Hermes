@@ -11,7 +11,7 @@
 #include "packet_handler.h"
 #include "hermes_packets.h"
 
-#define NUM_THREADS 1
+#define NUM_THREADS 2
 #define NUM_DEVICES 2
 
 // Defining indeces of devices
@@ -21,6 +21,7 @@
 #define SPEED 57600 // Baud rate
 
 void sendPacket(int fd, PacketHandler* ph, PacketHeader* h);
+void recvFn(PacketHeader* recvp, void* _args);
 
 
 

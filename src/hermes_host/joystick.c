@@ -27,6 +27,12 @@ int alterPacket(js_event* event, MotorControlPacket* mcp) {
     case DOWN:
       mcp->speed -= 10;
       break;
+    case LEFT:
+      mcp->mode = 0;
+      break;
+    case RIGHT:
+      mcp->mode = 1;
+      break;
     default:
       return 1;
     }
