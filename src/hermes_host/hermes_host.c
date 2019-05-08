@@ -80,7 +80,6 @@ void* mainRoutine(void *arg) {
     //while(reade > 0) {
       //MotorControlPacket mcp;
       if(e.type == JS_EVENT_BUTTON && e.value == BTN_PRES) { 	// Verifying that a button has been pressed
-        //printf("fuck\n");
         
         if(e.number == BTN_PS) {
           end_flag = 1;
