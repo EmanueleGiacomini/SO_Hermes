@@ -30,34 +30,12 @@ void timerCommFn(void) {
   comm_flag=1;
 }
 
-void timerJointFn(void) {
-  led_state=!led_state;
-  digio_setPin(13, led_state);
-  joint_flag=1;
-}
-
-static uint8_t _debug_flag=0;
-
-void timerDebugFn(void) {
-  _debug_flag=1;
-}
-                       
-
-void _debugFn(void) {
-  ++motor_status.encoder_ticks;
-  HermesComm_sendPacket((PacketHeader*)&motor_status, O_UART);
-}
-
-
-
 
 int main(int argc, char* argv[]) {
   digio_configurePin(13, Output);
   
   struct Timer* timer_comm=Timer_create(10, timerCommFn, 0);
-  struct Timer* timer_joint=Timer_create(50, timerDebugFn, 0);
   Timer_start(timer_comm);
-  Timer_start(timer_joint);
 
   Timer_init();
 
@@ -69,10 +47,6 @@ int main(int argc, char* argv[]) {
     if(comm_flag) {
       HermesComm_handle();
       comm_flag=0;
-    }
-    if(_debug_flag) {
-      _debugFn();
-      _debug_flag=0;
     }
   }
 
