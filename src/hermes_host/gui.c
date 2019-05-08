@@ -12,7 +12,7 @@ void sendPacket(int fd, PacketHandler* ph, PacketHeader* h, uint8_t* sem) {
   }
   *sem = 1;
 }
-
+/*
 MotorParamsPacket mpp = {
   {
     .id=ID_MOTOR_PARAMS_PACKET,
@@ -34,6 +34,27 @@ MotorParamsPacket mpp = {
   .dt=0,
   .idt=0,
 };
+*/
+MotorParamsPacket mpp = {
+  {
+    .id=ID_MOTOR_PARAMS_PACKET,
+    .size=sizeof(motor_params),
+    .seq=0,
+    .dest_addr=0,
+    .src_addr=0,
+    .checksum=0,
+  },
+  .dir_a_pin=5,
+  .dir_b_pin=6,
+  .pwm_pin=4,
+  .kp=5,
+  .ki=30,
+  .kd=0,
+  .max_i=255,
+  .max_output=255,
+  .dt=0.01,
+  .idt=100  
+};
 
 MotorStatusPacket* _motor_status;
 PacketHandler* _ph;
@@ -48,7 +69,7 @@ GtkWidget *ms;
 GtkWidget *kp;
 GtkWidget *ki;
 GtkWidget *kd;
-GtkWidget *dt;
+//GtkWidget *dt;
 
 void* routine(void *arg) {
   char val[10];
@@ -77,25 +98,25 @@ static void send_packet(GtkWidget *widget, gpointer data) {
   double kp_value;
   double ki_value;
   double kd_value;
-  double dt_value;
+  //double dt_value;
 
   // Extract values
   kp_value = atof(gtk_entry_get_text (GTK_ENTRY (kp)));
   ki_value = atof(gtk_entry_get_text (GTK_ENTRY (ki)));
   kd_value = atof(gtk_entry_get_text (GTK_ENTRY (kd)));
-  dt_value = atof(gtk_entry_get_text (GTK_ENTRY (dt)));
+  //dt_value = atof(gtk_entry_get_text (GTK_ENTRY (dt)));
 
   // Reset entries
   gtk_entry_set_text(GTK_ENTRY (kp), "");
   gtk_entry_set_text(GTK_ENTRY (ki), "");
   gtk_entry_set_text(GTK_ENTRY (kd), "");
-  gtk_entry_set_text(GTK_ENTRY (dt), "");
+  //gtk_entry_set_text(GTK_ENTRY (dt), "");
 
   mpp.kp = kp_value;
   mpp.ki = ki_value;
   mpp.kd = kd_value;
-  mpp.dt = dt_value;
-  mpp.idt = 1/dt_value;
+  //mpp.dt = dt_value;
+  //mpp.idt = 1/dt_value;
 
   PrintPacket(&mpp.h, buf);
   printf("%s\n",buf);
@@ -134,7 +155,7 @@ void initGUI(int fd, uint8_t* end_flag, uint8_t* send_sem, PacketHandler* ph, Mo
   GtkWidget *label_kp;
   GtkWidget *label_ki;
   GtkWidget *label_kd;
-  GtkWidget *label_dt;
+  //GtkWidget *label_dt;
 
   // Init gtk
   gtk_init (NULL, NULL);
@@ -166,7 +187,7 @@ void initGUI(int fd, uint8_t* end_flag, uint8_t* send_sem, PacketHandler* ph, Mo
   label_kp = gtk_label_new("Kp: ");
   label_ki = gtk_label_new("Ki: ");
   label_kd = gtk_label_new("Kd: ");
-  label_dt = gtk_label_new("dt: ");
+  //label_dt = gtk_label_new("dt: ");
 
 
   gtk_grid_attach (GTK_GRID (grid), label_et, 0, 0, 1, 1);
@@ -197,15 +218,15 @@ void initGUI(int fd, uint8_t* end_flag, uint8_t* send_sem, PacketHandler* ph, Mo
   gtk_entry_set_placeholder_text (GTK_ENTRY (kd), "Kd");
   gtk_grid_attach (GTK_GRID (grid), kd, 1, 6, 1, 1);
 
-  gtk_grid_attach (GTK_GRID (grid), label_dt, 0, 7, 1, 1);
-  dt = gtk_entry_new();
-  gtk_entry_set_placeholder_text (GTK_ENTRY (dt), "dt");
-  gtk_grid_attach (GTK_GRID (grid), dt, 1, 7, 1, 1);
+  //gtk_grid_attach (GTK_GRID (grid), label_dt, 0, 7, 1, 1);
+  //dt = gtk_entry_new();
+  //gtk_entry_set_placeholder_text (GTK_ENTRY (dt), "dt");
+  //gtk_grid_attach (GTK_GRID (grid), dt, 1, 7, 1, 1);
 
   // Send packet button
   button = gtk_button_new_with_label ("Send");
   g_signal_connect (button, "clicked", G_CALLBACK (send_packet), NULL);
-  gtk_grid_attach (GTK_GRID (grid), button, 0, 8, 2, 1);
+  gtk_grid_attach (GTK_GRID (grid), button, 0, 7, 2, 1);
 
   /*
   // Quit button
