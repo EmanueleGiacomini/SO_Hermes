@@ -38,7 +38,7 @@ MotorParamsPacket mpp = {
 MotorParamsPacket mpp = {
   {
     .id=ID_MOTOR_PARAMS_PACKET,
-    .size=sizeof(motor_params),
+    .size=sizeof(mpp),
     .seq=0,
     .dest_addr=0,
     .src_addr=0,
