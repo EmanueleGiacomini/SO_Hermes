@@ -130,9 +130,11 @@ void HermesComm_init(uint8_t interface) {
     PacketHandler_init(&uart_handler);
 #ifdef _CLIENT
     PacketHandler_addOperation(&uart_handler, &motor_control_packet_op);
+    PacketHandler_addOperation(&uart_handler, &motor_params_packet_op);
 #elif _RELAY
     PacketHandler_addOperation(&uart_handler, &motor_control_packet_op);
     PacketHandler_addOperation(&uart_handler, &motor_status_packet_op);
+    PacketHandler_addOperation(&uart_handler, &motor_params_packet_op);
 #endif
     
     // TODO init UART

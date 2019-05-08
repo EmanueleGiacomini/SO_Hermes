@@ -41,7 +41,9 @@ void commFn(void) {
   icycles=0;
   HermesComm_handle();
   HermesComm_readPacket((PacketHeader*)&motor_control);
-  //HermesComm_readPacket((PacketHeader*)&motor_params);
+  if(HermesComm_readPacket((PacketHeader*)&motor_params)==Success) {
+    HermesComm_sendPacket((PacketHeader*)&motor_params, O_UART);
+  }
   HermesJoints_handle();
   comm_flag=0;
 }
