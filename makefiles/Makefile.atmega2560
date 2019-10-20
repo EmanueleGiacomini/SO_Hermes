@@ -38,6 +38,7 @@ spi.o\
 encoder.o\
 pwm.o\
 timer.o\
+i2c.o\
 
 COMM_OBJS=packet_handler.o\
 buffer.o

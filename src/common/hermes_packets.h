@@ -63,4 +63,11 @@ typedef struct {
 } SystemStatusPacket;
 #define ID_SYSTEM_STATUS_PACKET 3
 
+typedef struct {
+  PacketHeader h;
+  double orientation[4]; // quaternion orientation data
+  double angular_velocity[3]; // gyroscope data
+  double linear_acceleration[3]; // accelerometer data
+} ImuStatusPacket;
+
 #pragma pack(pop)
